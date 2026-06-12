@@ -17,7 +17,7 @@ public class Aggregator_Message {
             throw new IllegalArgumentException("Messaggio non valido");
         }
 
-        String[] parts = x.trim().split(" ", 3);
+        String[] parts = x.trim().split(Aggregator_Protocol.SEP, Aggregator_Protocol.MAX_SPLIT);
         String command = parts[0].toUpperCase();
 
         String[] args;
