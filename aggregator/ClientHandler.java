@@ -1,5 +1,5 @@
-package LABSO_SOS.aggregator;
+package aggregator;
 
 public class ClientHandler {
-    
+
 }
