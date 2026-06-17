@@ -8,13 +8,12 @@ public class Client {
         Scanner scn = new Scanner(System.in);
         String input;
 
-        if (args.length != 0) {
+        if (args.length != 2) {
             System.out.println("Errore input. Riavviare il programma!");
         } else {
             while (true) {
                 System.out.print("> ");
                 input = scn.nextLine();
-                System.out.println(commandHandler.gestioneComandi(input));
                 if (commandHandler.gestioneComandi(input) == 3) {
                     break;
                 }
