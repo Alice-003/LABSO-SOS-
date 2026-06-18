@@ -2,17 +2,19 @@ package client;
 
 public class CommandHandler {
     public int gestioneComandi(String input) {
+        String[] strSplit = input.split(" ");
         switch (input.split(" ")[0].toLowerCase()) {
             case "listdata":
-                if (input.split(" ").length == 2) {
-                    if (input.split(" ")[1].toLowerCase().equals("local")) {
+                if (strSplit.length == 2) {
+                    if (strSplit[1].toLowerCase().equals("local")) {
                         return 1;
-                    } else if (input.split(" ")[1].toLowerCase().equals("remote")) {
+                    } else if (strSplit[1].toLowerCase().equals("remote")) {
                         return 2;
                     } else {
                         return -1;
                     }
                 }
+                return -1;
             case "quit":
                 return 3;
 
