@@ -4,43 +4,32 @@ import java.io.*;
 import java.util.Random;
 
 public class LocalStorage {
-    public static String generaID(int lunghezza) {
+    public static String generaCodice(int lunghezaID) {
+        String codice = "";
         Random rnd = new Random();
-        int numeroGenerato;
+
         int min = 48;
         int max = 57;
-        String ID = "";
-        for (int i = 0; i < lunghezza; i++) {
-            numeroGenerato = min + rnd.nextInt(max - min) + 1;
-            ID = ID + ((char) numeroGenerato);
+        int ris = 0;
+        for (int i = 0; i < lunghezaID; i++) {
+            ris = min + rnd.nextInt(max - min + 1);
+            codice = codice + ((char) ris);
         }
-        return ID;
+        return codice;
     }
 
-    public static int fileID() {
-        String ID;
+    public static void creaFileID(int lunghezzaID) {
         try {
-            File fileID = new File("client/Files/fileID.txt");
-            if (!fileID.exists()) {
-                fileID.createNewFile();
-                FileWriter fw = new FileWriter(fileID);
-                BufferedWriter bw = new BufferedWriter(fw);
-                bw.write(generaID(5));
-                bw.close();
-                fw.close();
-                return 0;
-            } else {
-                FileReader fr = new FileReader(fileID);
-                BufferedReader br = new BufferedReader(fr);
-                ID = br.readLine();
-                br.close();
-                fr.close();
-                return Integer.parseInt(ID);
-            }
-        } catch (Exception er) {
-            return -1;
+            File fileID = new File("client/Files/NodoID.txt");
+            fileID.createNewFile();
+            FileWriter fw = new FileWriter(fileID);
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(generaCodice(lunghezzaID));
+            bw.close();
+            fw.close();
+        } catch (Exception error) {
+
         }
 
     }
-
 }

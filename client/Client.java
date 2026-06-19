@@ -2,6 +2,7 @@ package client;
 
 import java.util.Scanner;
 import java.net.*;
+import java.io.File;
 
 public class Client {
     public static class NodeServer implements Runnable {
@@ -22,6 +23,7 @@ public class Client {
         String input;
         int comando;
         Boolean continuaCiclo = true;
+        int lunghezzaID = 5;
 
         if (args.length != 2) {
             System.out.println("Errore input. Riavviare il programma!");
@@ -31,15 +33,19 @@ public class Client {
             NodeServer nd = new NodeServer();
             Thread th = new Thread(nd);
             th.start();
+
             try {
 
                 Socket socket = new Socket();
                 InetSocketAddress IpAndPort = new InetSocketAddress("localhost", porta);
                 socket.connect(IpAndPort, 3000);
+                File fileID = new File("FilesID.txt");
+                if (!fileID.exists()) {
+                    LocalStorage.creaFileID(lunghezzaID);
+                }
 
                 // se ha successo verifica che il nodo sia in fase di registrazione iniziale
                 // oppure abbia già fatto accesso all'aggregatore
-                System.out.println(LocalStorage.fileID());
 
                 socket.close();
 
