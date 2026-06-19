@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.Random;
 
 public class LocalStorage {
-    public static String generaCodice(int lunghezaID) {
+    private static String generaCodice(int lunghezaID) {
         String codice = "";
         Random rnd = new Random();
 
@@ -28,8 +28,34 @@ public class LocalStorage {
             bw.close();
             fw.close();
         } catch (Exception error) {
-
+            System.out.println("Errore: " + error.getMessage());
         }
 
+    }
+
+    public static String ottineCodice() {
+        String codice = "";
+        try {
+            File fileID = new File("client/Files/NodoID.txt");
+            FileReader fw = new FileReader(fileID);
+            BufferedReader bw = new BufferedReader(fw);
+            codice = bw.readLine();
+            System.out.println("codice: " + codice);
+            bw.close();
+            fw.close();
+        } catch (Exception err) {
+
+        }
+        return codice;
+    }
+
+    public static void creaFileRilevazioni() {
+        try {
+            File fileRilevazioni = new File("client/Files/Rilevazioni_" + ottineCodice() + ".csv");
+            fileRilevazioni.createNewFile();
+
+        } catch (Exception error) {
+            System.out.println("Errore: " + error.getMessage());
+        }
     }
 }

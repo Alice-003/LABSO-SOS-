@@ -39,14 +39,16 @@ public class Client {
                 Socket socket = new Socket();
                 InetSocketAddress IpAndPort = new InetSocketAddress("localhost", porta);
                 socket.connect(IpAndPort, 3000);
-                File fileID = new File("FilesID.txt");
+                File fileID = new File("client/Files/NodoID.txt");
+
                 if (!fileID.exists()) {
                     LocalStorage.creaFileID(lunghezzaID);
                 }
 
-                // se ha successo verifica che il nodo sia in fase di registrazione iniziale
-                // oppure abbia già fatto accesso all'aggregatore
-
+                File fileRilevazioni = new File("client/Files/Rilevazioni_" + LocalStorage.ottineCodice() + ".csv");
+                if (!fileRilevazioni.exists()) {
+                    LocalStorage.creaFileRilevazioni();
+                }
                 socket.close();
 
             } catch (Exception er) {
