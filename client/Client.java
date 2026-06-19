@@ -40,14 +40,16 @@ public class Client {
                 InetSocketAddress IpAndPort = new InetSocketAddress("localhost", porta);
                 socket.connect(IpAndPort, 3000);
                 File fileID = new File("client/Files/NodoID.txt");
+                File fileRilevazioni = new File("client/Files/Rilevazioni_" + LocalStorage.ottieniCodice(2) + ".csv");
 
-                if (!fileID.exists()) {
+                if (!fileID.exists() && !fileRilevazioni.exists()) {
                     LocalStorage.creaFileID(lunghezzaID);
-                }
-
-                File fileRilevazioni = new File("client/Files/Rilevazioni_" + LocalStorage.ottineCodice() + ".csv");
-                if (!fileRilevazioni.exists()) {
                     LocalStorage.creaFileRilevazioni();
+                } else if (fileID.exists() && !fileRilevazioni.exists()) {
+
+                    LocalStorage.creaFileRilevazioni();
+                } else if (!fileID.exists() && fileRilevazioni.exists()) {
+                    LocalStorage.creaFileID(lunghezzaID, LocalStorage.ottieniCodice(2));
                 }
                 socket.close();
 

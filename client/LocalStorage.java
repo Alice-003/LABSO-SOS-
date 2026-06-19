@@ -1,7 +1,13 @@
 package client;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class LocalStorage {
     private static String generaCodice(int lunghezaID) {
@@ -33,16 +39,61 @@ public class LocalStorage {
 
     }
 
-    public static String ottineCodice() {
-        String codice = "";
+    public static void creaFileID(int lunghezzaID, String codice) {
         try {
             File fileID = new File("client/Files/NodoID.txt");
-            FileReader fw = new FileReader(fileID);
-            BufferedReader bw = new BufferedReader(fw);
-            codice = bw.readLine();
-            System.out.println("codice: " + codice);
+            fileID.createNewFile();
+            FileWriter fw = new FileWriter(fileID);
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(codice);
+
             bw.close();
             fw.close();
+        } catch (Exception error) {
+            System.out.println("Errore: " + error.getMessage());
+        }
+
+    }
+
+    public static String ottieniCodice(int index) {
+        String codice = "";
+
+        try {
+            switch (index) {
+                case 1:
+                    File fileID = new File("client/Files/NodoID.txt");
+                    FileReader fw = new FileReader(fileID);
+                    BufferedReader bw = new BufferedReader(fw);
+                    codice = bw.readLine();
+
+                    bw.close();
+                    fw.close();
+
+                    break;
+
+                case 2:
+
+                    Path dir = Paths.get("client/Files/");
+                    String prefisso = "Rilevazioni";
+
+                    try (Stream<Path> stream = Files.list(dir)) {
+
+                        List<Path> fileTrovati = stream
+                                .filter(Files::isRegularFile) // Assicura che sia un FILE e NON una cartella
+                                .filter(path -> path.getFileName().toString().startsWith(prefisso))
+                                .collect(Collectors.toList());
+
+                        // 3. Mostra i risultati
+
+                        if (!fileTrovati.isEmpty()) {
+                            codice = fileTrovati.getFirst().getFileName().toString().split("_")[1].split("\\.")[0];
+
+                        }
+                        break;
+                    }
+            }
+            return codice;
+
         } catch (Exception err) {
 
         }
@@ -51,7 +102,13 @@ public class LocalStorage {
 
     public static void creaFileRilevazioni() {
         try {
-            File fileRilevazioni = new File("client/Files/Rilevazioni_" + ottineCodice() + ".csv");
+            File fileID = new File("client/Files/NodoID.txt");
+            FileReader fw = new FileReader(fileID);
+            BufferedReader bw = new BufferedReader(fw);
+            String codice = bw.readLine();
+            bw.close();
+            fw.close();
+            File fileRilevazioni = new File("client/Files/Rilevazioni_" + codice + ".csv");
             fileRilevazioni.createNewFile();
 
         } catch (Exception error) {
