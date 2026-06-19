@@ -80,7 +80,7 @@ public class LogManager {
     public List<LogEntry> getEntries(){
         readLock.lock();
         try{
-            return Collections.unmodifiableList(new ArrayList<>());
+            return Collections.unmodifiableList(new ArrayList<>(entries));
         }finally{
             readLock.unlock();
         }
