@@ -17,7 +17,8 @@ public class LocalStorage {
         return ID;
     }
 
-    public static void fileID() {
+    public static int fileID() {
+        String ID;
         try {
             File fileID = new File("client/Files/fileID.txt");
             if (!fileID.exists()) {
@@ -27,10 +28,17 @@ public class LocalStorage {
                 bw.write(generaID(5));
                 bw.close();
                 fw.close();
-
+                return 0;
+            } else {
+                FileReader fr = new FileReader(fileID);
+                BufferedReader br = new BufferedReader(fr);
+                ID = br.readLine();
+                br.close();
+                fr.close();
+                return Integer.parseInt(ID);
             }
         } catch (Exception er) {
-
+            return -1;
         }
 
     }

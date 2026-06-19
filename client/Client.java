@@ -11,7 +11,7 @@ public class Client {
                 serverSocket.accept();
 
             } catch (Exception e) {
-                System.out.println("Errore: " + e.getMessage());
+
             }
         }
     }
@@ -32,13 +32,15 @@ public class Client {
             Thread th = new Thread(nd);
             th.start();
             try {
-                LocalStorage.fileID();
+
                 Socket socket = new Socket();
                 InetSocketAddress IpAndPort = new InetSocketAddress("localhost", porta);
                 socket.connect(IpAndPort, 3000);
+
                 // se ha successo verifica che il nodo sia in fase di registrazione iniziale
                 // oppure abbia già fatto accesso all'aggregatore
-                LocalStorage.fileID();
+                System.out.println(LocalStorage.fileID());
+
                 socket.close();
 
             } catch (Exception er) {
