@@ -46,11 +46,11 @@ public class Client {
                     LocalStorage.creaFileID(lunghezzaID);
                     LocalStorage.creaFileRilevazioni();
                 } else if (fileID.exists() && !fileRilevazioni.exists()) {
-
                     LocalStorage.creaFileRilevazioni();
                 } else if (!fileID.exists() && fileRilevazioni.exists()) {
                     LocalStorage.creaFileID(lunghezzaID, LocalStorage.ottieniCodice(2));
                 }
+                LocalStorage.ScriviNuoviDati(LocalStorage.ottieniCodice(1));
                 socket.close();
 
             } catch (Exception er) {
@@ -58,9 +58,6 @@ public class Client {
                 scn.close();
                 return;
             }
-            // all'interno del ciclo i comandi inviati dall'utente vengono tradotti in un
-            // ntero per poi eseguire l'azione
-            // intero tramite CommandHandler.java
 
             while (continuaCiclo) {
                 System.out.print("> ");
