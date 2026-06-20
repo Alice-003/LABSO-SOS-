@@ -24,6 +24,27 @@ public class LocalStorage {
         return codice;
     }
 
+    public static String trovaFile() {
+        Path dir = Paths.get("client/Files/");
+        String prefisso = "Rilevazioni";
+        String codice = "f";
+        try (Stream<Path> stream = Files.list(dir)) {
+            List<Path> fileTrovati = stream
+                    .filter(Files::isRegularFile) // Assicura che sia un FILE e NON una cartella
+                    .filter(path -> path.getFileName().toString().startsWith(prefisso))
+                    .collect(Collectors.toList());
+
+            if (!fileTrovati.isEmpty()) {
+                return fileTrovati.getFirst().getFileName().toString();
+            }
+
+        } catch (Exception er) {
+            System.out.println("Errore: " + er.getMessage());
+        }
+        return "";
+
+    }
+
     public static void creaFileID(int lunghezzaID) {
         try {
             File fileID = new File("client/Files/NodoID.txt");
@@ -72,25 +93,9 @@ public class LocalStorage {
                     break;
 
                 case 2:
+                    codice = trovaFile().split("_")[1].split("\\.")[0];
+                    break;
 
-                    Path dir = Paths.get("client/Files/");
-                    String prefisso = "Rilevazioni";
-
-                    try (Stream<Path> stream = Files.list(dir)) {
-
-                        List<Path> fileTrovati = stream
-                                .filter(Files::isRegularFile) // Assicura che sia un FILE e NON una cartella
-                                .filter(path -> path.getFileName().toString().startsWith(prefisso))
-                                .collect(Collectors.toList());
-
-                        // 3. Mostra i risultati
-
-                        if (!fileTrovati.isEmpty()) {
-                            codice = fileTrovati.getFirst().getFileName().toString().split("_")[1].split("\\.")[0];
-
-                        }
-                        break;
-                    }
             }
             return codice;
 
@@ -98,6 +103,11 @@ public class LocalStorage {
 
         }
         return codice;
+    }
+
+    public static void ScriviNuoviDati() {
+        int numeroMisurazioni = 10;
+
     }
 
     public static void creaFileRilevazioni() {
