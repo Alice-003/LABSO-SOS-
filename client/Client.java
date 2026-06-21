@@ -1,21 +1,10 @@
 package client;
 
 import java.util.Scanner;
-import java.net.*;
-import java.io.File;
+
+import java.io.*;
 
 public class Client {
-    public static class NodeServer implements Runnable {
-        @Override
-        public void run() {
-            try (ServerSocket serverSocket = new ServerSocket()) {
-                serverSocket.accept();
-
-            } catch (Exception e) {
-
-            }
-        }
-    }
 
     public static void main(String[] args) {
         CommandHandler commandHandler = new CommandHandler();
@@ -24,21 +13,14 @@ public class Client {
         int comando;
         Boolean continuaCiclo = true;
         int lunghezzaID = 5;
+        String ID;
 
         if (args.length != 2) {
             System.out.println("Errore input. Riavviare il programma!");
         } else {
 
-            int porta = Integer.parseInt(args[1]);
-            NodeServer nd = new NodeServer();
-            Thread th = new Thread(nd);
-            th.start();
-
             try {
 
-                Socket socket = new Socket();
-                InetSocketAddress IpAndPort = new InetSocketAddress("localhost", porta);
-                socket.connect(IpAndPort, 3000);
                 File fileID = new File("client/Files/NodoID.txt");
                 File fileRilevazioni = new File("client/Files/Rilevazioni_" + LocalStorage.ottieniCodice(2) + ".csv");
 
@@ -50,8 +32,8 @@ public class Client {
                 } else if (!fileID.exists() && fileRilevazioni.exists()) {
                     LocalStorage.creaFileID(lunghezzaID, LocalStorage.ottieniCodice(2));
                 }
-                LocalStorage.ScriviNuoviDati(LocalStorage.ottieniCodice(1));
-                socket.close();
+                ID = LocalStorage.ottieniCodice(1);
+                LocalStorage.ScriviNuoviDati(ID);
 
             } catch (Exception er) {
                 System.out.println("Errore: " + er.getMessage());
