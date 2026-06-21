@@ -1,6 +1,5 @@
 package aggregator;
 
-<<<<<<< HEAD
 import aggregator.protocol.Aggregator_Message;
 import aggregator.protocol.Aggregator_Protocol;
 
@@ -233,9 +232,5 @@ public class ClientHandler implements Runnable {
         System.out.println("Connessione chiusa per " + (nodeName != null ? nodeName : nodeIp));
                 
     }
-=======
-public class ClientHandler {
->>>>>>> ba428aa49cd68eaed83cde99cd453e86aba4f58a
-
 }
 
