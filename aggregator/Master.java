@@ -31,8 +31,9 @@ public class Master {
         ResourceTable resourceTable=new ResourceTable();
         LogManager logManager=new LogManager();
 
-        /**3) apre ServerSocket sulla porta */
-        try(ServerSocket serverSocket=new ServerSocket(port)){
+        /**3) apre ServerSocket sulla porta e gestisco la chiusura dello Scanner*/
+        try(ServerSocket serverSocket=new ServerSocket(port); 
+            Scanner in=new Scanner(System.in);){
             System.out.println("Aggregatore avviato sulla porta "+ port);
 
             /**4) creo un thread separato che accetta connessioni in loop */
@@ -58,7 +59,6 @@ public class Master {
             acceptThread.start();
 
             /**5) loop interattivo nel thread principale */
-            Scanner in=new Scanner(System.in);
             while(true){
                 String input=in.nextLine().trim();
                 switch(input){
