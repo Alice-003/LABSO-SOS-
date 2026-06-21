@@ -94,6 +94,7 @@ public class ClientHandler implements Runnable {
                                 String nomeRisorsa = msg.getArg(0);
                                 String contenuto = msg.getArg(1);
                                 resourceTable.addResource(nodeName, nomeRisorsa);
+                                
                                 System.out.println("Nodo " + nodeName + " ha aggiunto risorsa: " + nomeRisorsa);
                                 to.println(Aggregator_Protocol.OK);
                                 break;

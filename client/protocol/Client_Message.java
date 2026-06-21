@@ -1,4 +1,4 @@
-package LABSO_SOS.client.protocol;
+package client.protocol;
 
 public class Client_Message {
 

@@ -1,5 +1,5 @@
-package LABSO_SOS.client;
+package client;
 
 public class CommandHandler {
-    
+
 }
