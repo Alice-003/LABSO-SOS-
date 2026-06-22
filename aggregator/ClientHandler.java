@@ -152,8 +152,7 @@ public class ClientHandler implements Runnable {
                                 // nome della rilevazione è il primo argomento
                                 String nomeRisorsa = msg.getArg(0);
                                 
-                                // il contenuto non viene salvato dall'aggregatore
-                                String contenuto = msg.getArg(1);
+                                // non leggo il contenuto, l'aggregatore traccia solo chi possiede la risorsa
                                 
                                 // registro nella ResourceTable che questo nodo possiede questa risorsa
                                 resourceTable.addResource(nodeName, nomeRisorsa);
