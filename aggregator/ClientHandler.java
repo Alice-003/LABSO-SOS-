@@ -88,14 +88,23 @@ public class ClientHandler implements Runnable {
                         switch (msg.getCommand()){
 
                             case Aggregator_Protocol.REGISTER:
+                                if (nodeName != null) {
+                                    to.println(Aggregator_Protocol.ERROR + " Nodo già registrato come " + nodeName);
+                                    break;
+                                }
                                 // un nodo si registra: deve fornire almeno nome e porta
                                 if(!msg.hasAtLeast(2)){
                                     to.println(Aggregator_Protocol.ERROR + " Formato errato, serve: REGISTER nomeNodo porta");
                                     break;
                                 }
                                 
-                                // salvo il nome del nodo
-                                nodeName = msg.getArg(0);
+                                String nomeNodoCandidato = msg.getArg(0);
+                                if (!nomeNodoCandidato.matches("[a-zA-Z0-9_]+")) {
+                                    to.println(Aggregator_Protocol.ERROR + "Il nome del nodo può contenere solo lettere, numeri e underscore");
+                                    break;
+                                }
+                                
+                                nodeName = nomeNodoCandidato;
                                 
                                 // salvo la porta del nodo, convertendola in numero
                                 try {
@@ -252,6 +261,7 @@ public class ClientHandler implements Runnable {
 
                             case Aggregator_Protocol.DOWNLOAD_OK:
                                 if (nodeName == null) {
+                                    System.out.println("Tentativo di comando senza registrazione da " + nodeIp + ": " + msg.getCommand());
                                     to.println(Aggregator_Protocol.ERROR + " Nodo non registrato, invia REGISTER");
                                     break;
                                 }
@@ -280,7 +290,7 @@ public class ClientHandler implements Runnable {
 
                             default:
                                 // comando non riconosciuto tra quelli previsti dal protocollo
-                                to.println(Aggregator_Protocol.ERROR + " Comando sconosciuto: " + msg.getCommand());
+                                to.println(Aggregator_Protocol.ERROR + " Comando non riconosciuto: " + msg.getCommand());
                                                                     
                         }
                     } catch (IllegalArgumentException e){
