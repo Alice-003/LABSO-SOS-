@@ -20,7 +20,6 @@ public class Client {
         } else {
 
             try {
-
                 File fileID = new File("client/Files/NodoID.txt");
                 File fileRilevazioni = new File("client/Files/Rilevazioni_" + LocalStorage.ottieniCodice(2) + ".csv");
 
@@ -32,6 +31,7 @@ public class Client {
                 } else if (!fileID.exists() && fileRilevazioni.exists()) {
                     LocalStorage.creaFileID(lunghezzaID, LocalStorage.ottieniCodice(2));
                 }
+
                 ID = LocalStorage.ottieniCodice(1);
                 LocalStorage.ScriviNuoviDati(ID);
 
@@ -47,6 +47,8 @@ public class Client {
                 comando = commandHandler.gestioneComandi(input);
                 switch (comando) {
                     case 1:
+                        System.out.println("Risorse:");
+                        LocalStorage.mostraRilevazioniLocale();
                         break;
                     case 2:
                         break;
@@ -63,7 +65,6 @@ public class Client {
                 }
 
             }
-
         }
         scn.close();
     }
