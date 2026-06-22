@@ -260,7 +260,6 @@ public class ClientHandler implements Runnable {
 
                             case Aggregator_Protocol.DOWNLOAD_OK:
                                 if (nodeName == null) {
-                                    System.out.println("Tentativo di comando senza registrazione da " + nodeIp + ": " + msg.getCommand());
                                     to.println(Aggregator_Protocol.ERROR + " Nodo non registrato, invia REGISTER");
                                     break;
                                 }
