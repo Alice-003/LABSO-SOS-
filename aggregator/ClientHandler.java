@@ -90,7 +90,7 @@ public class ClientHandler implements Runnable {
                             case Aggregator_Protocol.REGISTER:
                                 // un nodo si registra: deve fornire almeno nome e porta
                                 if(!msg.hasAtLeast(2)){
-                                    to.println(Aggregator_Protocol.ERROR + " REGISTER richiede : <nomenodo> <portaAscolto>");
+                                    to.println(Aggregator_Protocol.ERROR + " Formato errato, serve: REGISTER nomeNodo porta");
                                     break;
                                 }
                                 
@@ -101,7 +101,7 @@ public class ClientHandler implements Runnable {
                                 try {
                                     nodePort = Integer.parseInt(msg.getArg(1));
                                 } catch(NumberFormatException e) {
-                                    to.println(Aggregator_Protocol.ERROR + " Porta non valida");
+                                    to.println(Aggregator_Protocol.ERROR + " La porta deve essere un numero");
                                     nodeName = null;
                                     break;
                                 }
@@ -130,14 +130,14 @@ public class ClientHandler implements Runnable {
                             case Aggregator_Protocol.ADD:
                                 // un nodo deve essersi registrato prima di poter aggiungere rilevazioni
                                 if (nodeName == null){
-                                    to.println(Aggregator_Protocol.ERROR + "Devi prima inviare REGISTER");
+                                    to.println(Aggregator_Protocol.ERROR + " Nodo non registrato, invia REGISTER");
                                     break;
 
                                 }
                                 
                                 // ADD richiede sia il nome della risorsa che il contenuto
                                 if(!msg.hasAtLeast(2)){
-                                    to.println(Aggregator_Protocol.ERROR + " ADD richiede: <nomeRisorsa> <contenuto>");
+                                    to.println(Aggregator_Protocol.ERROR + " Formato errato, serve: ADD nomeRisorsa contenuto");
                                     break;
                                 }
                                 // nome della rilevazione è il primo argomento
@@ -155,7 +155,7 @@ public class ClientHandler implements Runnable {
 
                             case Aggregator_Protocol.LISTDATA_REMOTE:
                                 if(nodeName == null){
-                                    to.println(Aggregator_Protocol.ERROR + "Devi prima inviare REGISTER");
+                                    to.println(Aggregator_Protocol.ERROR + " Nodo non registrato, invia REGISTER");
                                     break;
                                 }
 
@@ -183,13 +183,13 @@ public class ClientHandler implements Runnable {
                             case Aggregator_Protocol.DOWNLOAD_REQUEST:
                                 // il nodo deve essersi registrato prima di chiedere un download
                                 if(nodeName == null) {
-                                    to.println(Aggregator_Protocol.ERROR + "Devi prima inviare REGISTER");
+                                    to.println(Aggregator_Protocol.ERROR + " Nodo non registrato, invia REGISTER");
                                     break;
                                 }
 
                                 // serve il nome della risorsa da scaricare
                                 if(!msg.hasAtLeast(1)){
-                                    to.println(Aggregator_Protocol.ERROR + " DOWNLOAD REQUEST richiede: <nomeRisorsa>");
+                                    to.println(Aggregator_Protocol.ERROR + " Formato errato, serve: DOWNLOAD_REQUEST nomeRisorsa");
                                     break;
                                 }
 
@@ -199,7 +199,7 @@ public class ClientHandler implements Runnable {
                                                                 
                                 Optional<String> peer0pt = resourceTable.getActiveNodeForResource(risorsaRichiesta);
                                 if(peer0pt.isEmpty()){
-                                    to.println(Aggregator_Protocol.ERROR + "Risorsa non disponibile: " + risorsaRichiesta);                            
+                                    to.println(Aggregator_Protocol.ERROR + " Nessun nodo ha questa rilevazione: " + risorsaRichiesta);                            
                                 } else {
                                     
                                     // ho trovato un nodo che possiede la risorsa
@@ -227,13 +227,13 @@ public class ClientHandler implements Runnable {
 
                             case Aggregator_Protocol.DOWNLOAD_FAILED:
                                 if (nodeName == null) {
-                                    to.println(Aggregator_Protocol.ERROR + "Devi prima inviare REGISTER");
+                                    to.println(Aggregator_Protocol.ERROR + " Nodo non registrato, invia REGISTER");
                                     break;
                                 }
                                 
                                 // servono sia la risorsa che il nodo peer che ha fallito
                                 if (!msg.hasAtLeast(2)){
-                                    to.println(Aggregator_Protocol.ERROR + " DOWNLOAD_FAILED richiede: <nomeRisorsa> <nomeNodoPeer>");
+                                    to.println(Aggregator_Protocol.ERROR + " Formato errato, serve: DOWNLOAD_FAILED nomeRIsorsa nomeNodoPeer");
                                     break;
                                 }
                                 String risorsaFallita = msg.getArg(0);
@@ -252,12 +252,12 @@ public class ClientHandler implements Runnable {
 
                             case Aggregator_Protocol.DOWNLOAD_OK:
                                 if (nodeName == null) {
-                                    to.println(Aggregator_Protocol.ERROR + "Devi prima inviare REGISTER");
+                                    to.println(Aggregator_Protocol.ERROR + " Nodo non registrato, invia REGISTER");
                                     break;
                                 }
                                 // servono sia la risorsa che il nodo peer da cui ha scaricato
                                 if (!msg.hasAtLeast(2)){
-                                    to.println(Aggregator_Protocol.ERROR + " DOWNLOAD_OK richiede: <nomeRisorsa> <nomeNodoPeer>");
+                                    to.println(Aggregator_Protocol.ERROR + " Formato errato, serve: DOWNLOAD_OK nomeRisorsa nomeNodoPeer");
                                     break;
                                 }
                                 String risorsaOk = msg.getArg(0);
@@ -275,7 +275,7 @@ public class ClientHandler implements Runnable {
                                 // il nodo vuole disconnettersi: imposto closed a true
                                 // così il while si ferma al prossimo controllo                                
                                 closed = true;
-                                to.println(Aggregator_Protocol.OK + " Arrivederci ");
+                                to.println(Aggregator_Protocol.OK + " Sessione terminata ");
                                 break;
 
                             default:
