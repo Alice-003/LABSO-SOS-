@@ -4,6 +4,10 @@ import java.util.*;
 import java.util.concurrent.locks.*;
 
 public class ResourceTable {
+
+    public record NodeAddress(String ip, int port) {
+        
+    }
     //OPERAZIONI DI SCRITTURA
     /**rilevazione: insieme di nodi che la possiedono
      * uso Set perché garantisce che ogni rilevazione ha un nome univoco
@@ -40,7 +44,7 @@ public class ResourceTable {
    /** Metodo che aggiunge una rilevazione a un nodo già connesso.
     * viene chiamato quando un sensore esegue il comando "add"
    */
-   public void addRecouce(String nodeId, String resourceName){
+   public void addResource(String nodeId, String resourceName){
     writeLock.lock();
     try{
         table.computeIfAbsent(resourceName, k->new HashSet<>()).add(nodeId);
