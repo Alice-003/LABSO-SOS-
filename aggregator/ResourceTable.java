@@ -4,10 +4,10 @@ import java.util.*;
 import java.util.concurrent.locks.*;
 
 public class ResourceTable {
-
-    public record NodeAddress(String ip, int port) {
-        
-    }
+    
+    // record che rappresenta l'indirizzo di rete di un nodo: ip e porta
+    public record NodeAddress(String ip, int port) {}
+    
     //OPERAZIONI DI SCRITTURA
     /**rilevazione: insieme di nodi che la possiedono
      * uso Set perché garantisce che ogni rilevazione ha un nome univoco
@@ -17,6 +17,7 @@ public class ResourceTable {
     
     /**nodi connessi all'agregator */
     private final Set<String> activeNodes=new HashSet<>();
+    private final Map<String, NodeAddress> addresses=new HashMap<>();
     private final ReentrantReadWriteLock rwLock=new ReentrantReadWriteLock();
     private final Lock readLock=rwLock.readLock();
     private final Lock writeLock=rwLock.writeLock();
@@ -27,10 +28,11 @@ public class ResourceTable {
      * solo un thread alla volta può scrivere quindi gli altri devono espettare
      * il rilascio del lock.
     */
-   public void registerNodes(String nodeId, List<String> resources){
+   public void registerNodes(String nodeId, List<String> resources, String ip, int port){
     writeLock.lock(); //acquisisce il lock
     try{
         activeNodes.add(nodeId);
+        addresses.put(nodeId, new NodeAddress(ip, port));
         for(int i=0; i<resources.size(); i++){
             String resource=resources.get(i);
             //se la rilevazione non è ancora nella tabella creo un nuovo Set e poi aggiungo il nodo
@@ -127,6 +129,16 @@ public class ResourceTable {
             }
         }
         return result;
+    }finally{
+        readLock.unlock();
+    }
+   }
+
+   /**Metodo che restituisce l'indirizzo ip e porta di un nodo dato il suo nome */
+   public NodeAddress getNodeAddress(String nodeId){
+    readLock.lock();
+    try{
+        return addresses.get(nodeId);
     }finally{
         readLock.unlock();
     }
