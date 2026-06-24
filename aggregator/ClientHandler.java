@@ -130,7 +130,7 @@ public class ClientHandler implements Runnable {
                                 }
                                 
                                 // registro il nodo e le sue rilevazioni iniziali nella ResourceTable
-                                resourceTable.registerNodes(nodeName, resourceList);
+                                resourceTable.registerNodes(nodeName, resourceList, nodeIp, nodePort);
 
                                 System.out.println("Nodo registrato: " + nodeName + " @ " + nodeIp + ":" + nodePort);
                                 to.println(Aggregator_Protocol.OK + "Benvenuto " + nodeName);
