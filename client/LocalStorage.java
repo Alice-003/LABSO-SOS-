@@ -24,9 +24,8 @@ public class LocalStorage {
         return codice;
     }
 
-    private static String trovaFile() {
+    private static String trovaFile(String prefisso) {
         Path dir = Paths.get("client/Files/");
-        String prefisso = "Rilevazioni";
 
         try (Stream<Path> stream = Files.list(dir)) {
             List<Path> fileTrovati = stream
@@ -35,7 +34,12 @@ public class LocalStorage {
                     .collect(Collectors.toList());
 
             if (!fileTrovati.isEmpty()) {
-                return fileTrovati.getFirst().getFileName().toString();
+
+                if (prefisso.equals("Rilevazioni")) {
+                    return fileTrovati.getFirst().getFileName().toString();
+                } else if (prefisso.equals("Download")) {
+                    return fileTrovati.toString();
+                }
             }
 
         } catch (Exception er) {
@@ -93,7 +97,7 @@ public class LocalStorage {
                     break;
 
                 case 2:
-                    codice = trovaFile().split("_")[1].split("\\.")[0];
+                    codice = trovaFile("Rilevazioni").split("_")[1].split("\\.")[0];
                     break;
 
             }
@@ -121,7 +125,7 @@ public class LocalStorage {
         try {
 
             File fileRilevazioni = new File("client/Files/Rilevazioni_" + ID + ".csv");
-            System.out.println("Nome file: " + fileRilevazioni.getName() + ".csv");
+
             FileWriter fw = new FileWriter(fileRilevazioni, true);
             BufferedWriter bw = new BufferedWriter(fw);
             for (int i = 0; i < numeroMisurazioni; i++) {
@@ -146,7 +150,6 @@ public class LocalStorage {
         try {
 
             File fileRilevazioni = new File("client/Files/Rilevazioni_" + ottieniCodice(1) + ".csv");
-            System.out.println("Nome generato" + fileRilevazioni.getName());
             fileRilevazioni.createNewFile();
             FileWriter fwRilevazioni = new FileWriter(fileRilevazioni, true);
             BufferedWriter bwRilevazioni = new BufferedWriter(fwRilevazioni);
@@ -156,6 +159,34 @@ public class LocalStorage {
 
         } catch (Exception error) {
             System.out.println("Errore: " + error.getMessage());
+        }
+    }
+
+    public static void mostraRilevazioniLocale() {
+        try {
+            String path = "client/Files/";
+            File fileInLettura = new File(path + trovaFile("Rilevazioni"));
+            FileReader fr = new FileReader(fileInLettura);
+            BufferedReader br = new BufferedReader(fr);
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                System.out.println(linea);
+            }
+            String fileDownload = trovaFile("Download");
+            fileDownload = fileDownload.replaceAll("[\\[\\]]", "");
+            for (int i = 0; i < fileDownload.length(); i++) {
+                System.out.println(fileDownload.split(",")[i]);
+                fr = new FileReader(new File(fileDownload.split(",")[i].trim()));
+                br = new BufferedReader(fr);
+                while ((linea = br.readLine()) != null) {
+                    System.out.println(linea);
+                }
+
+                br.close();
+                fr.close();
+            }
+        } catch (Exception er) {
+
         }
     }
 }
