@@ -43,8 +43,7 @@ public class Master {
                         Socket socket=serverSocket.accept();
                         System.out.println("Nuovo nodo connesso: "+socket.getInetAddress());
 
-                        /*TODO: creare ClientHandler quando sarà definito il costruttore
-                        new Thread(new ClientHandler(socket, resourceTable, logManager)).start(); */
+                        new Thread(new ClientHandler(socket, resourceTable, logManager)).start();
 
                     }catch(IOException e){
                         //se il socket è chiuso l'eccezione attende "quit" altrimenti viene segnalata
