@@ -1,3 +1,5 @@
+package client.protocol;
+
 public class Protocol {
     
     public static final String RICHIESTA_TEMPERATURA = "TEMPERATURA";
