@@ -1,3 +1,5 @@
+package client;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -5,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import client.protocol.Protocol;
 
 
 public class DownloadManager {
@@ -12,9 +15,6 @@ public class DownloadManager {
     public DownloadManager() {}
 
     //Tipo di rilevazione = risorsa
-
-
-    //TODO: AD OGNI METODO MESSAGE, SOSTITUISCI LA SCRITTA NODO COL MITTENTE CORRETTO
 
 
     //Metodo per dare al client la scelta dell'attività da eseguire
