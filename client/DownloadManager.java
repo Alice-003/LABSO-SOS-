@@ -74,13 +74,13 @@ public class DownloadManager {
     }
 
     //Metodo per ottenere la lista degli id dei nodi attivi
-    public synchronized Message ottieni_lista_nodi() {
+    public synchronized String ottieni_lista_nodi(String id_nodo) {
 
-        Message sms = null;
+        String sms = null;
 
         try {
             System.out.println("Download manager: Richiedo al server la lista dei nodi attivi..");
-            sms = new Message(Protocol.RICHIESTA_LISTA_NODI, "NODO", Protocol.DESTINATARIO_SERVER, null);
+            sms = Protocol.RICHIESTA_LISTA_NODI;
         } catch (Exception e){
             System.out.println("Errore nella richiesta: " + e.getMessage());
             }
@@ -89,15 +89,15 @@ public class DownloadManager {
     }
 
     //Metodo per chiedere al server quale nodo abbia la risorsa che vogliamo
-    public synchronized Message richiedi_id_nodo_con_risorsa_voluta() {
-        Message sms = null;
+    public synchronized String richiedi_id_nodo_con_risorsa_voluta() {
+        String sms = null;
 
         try {
             String risorsa = cerca_rilevazione_da_rete();
 
             if (!risorsa.equals(Protocol.ERRORE)) {
                 System.out.println("Download manager: Richiedo al server quale nodo abbia la risorsa: " + risorsa);
-                sms = new Message(Protocol.RICHIESTA_NODO_CON_RISORSA, "NODO", Protocol.DESTINATARIO_SERVER, risorsa);
+                sms = Protocol.RICHIESTA_NODO_CON_RISORSA + " " + risorsa;
             } else {
                 System.out.println("Download manager: Errore nella richiesta.");
                 }
@@ -108,10 +108,10 @@ public class DownloadManager {
     }
 
     //Metodo per richiedere il tipo di risorsa da un nodo specifico
-    public synchronized Message richiesta_accesso_nodo(){
+    public synchronized String richiesta_accesso_nodo(){
 
         Scanner userInput = new Scanner(System.in);
-        Message sms = null;
+        String sms = null;
 
         try {
             System.out.print("\nInserisci l'ID del nodo a cui vuoi accedere: ");
@@ -124,7 +124,7 @@ public class DownloadManager {
             
             if (!risorsa.equals(Protocol.ERRORE)) {
                 System.out.println("Download manager: Invio di richiesta di accesso a nodo: " + id_nodo);
-                sms = new Message(Protocol.RICHIESTA_DOWNLOAD_DA_NODO, "NODO", Protocol.DESTINATARIO_SERVER, data);
+                sms = Protocol.RICHIESTA_DOWNLOAD_DA_NODO + " " + data;
             } else {
                 System.out.println("Download manager: Errore nella richiesta.");
                 }
@@ -138,12 +138,12 @@ public class DownloadManager {
     }
 
     //Metodo per richiedere al server il download di una risorsa
-    public synchronized Message richiesta_download_da_server(String risorsa) {
-        Message sms = null;
+    public synchronized String richiesta_download_da_server(String risorsa) {
+        String sms = null;
 
         try {
             System.out.println("Download Manager: Richiedo al server la risorsa: " + risorsa);
-            sms = new Message(Protocol.RICHIESTA_DOWNLOAD_DA_RETE, "NODO", Protocol.DESTINATARIO_SERVER, risorsa);
+            sms = Protocol.RICHIESTA_DOWNLOAD_DA_RETE + " " + risorsa;
         } catch (Exception e) {
             System.out.println("Errore nella richiesta di accesso: " + e.getMessage());
         }
