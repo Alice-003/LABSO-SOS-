@@ -5,11 +5,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.HashSet;
 
 public class LocalStorage {
+    public static HashSet<String> codici = new HashSet<String>();
+
+    // Il metodo genera un codice casuale utilizzato sia per generare l'ID di un
+    // nodo sia per generare il codice della rilevazione
+
     private static String generaCodice(int lunghezaID) {
         String codice = "";
         Random rnd = new Random();
@@ -80,6 +87,10 @@ public class LocalStorage {
 
     }
 
+    // Ottieni il codice attraverso sia il file ID oppure attraverso il file
+    // Rilevazioni
+    // Può essere ottenuto in due modi a seconda di quale file manca per esempio
+
     public static String ottieniCodice(int index) {
         String codice = "none";
 
@@ -109,6 +120,7 @@ public class LocalStorage {
         return codice;
     }
 
+    // Metodo che serve per trasmettere all'aggregatore nuovi dati realistici
     public static void ScriviNuoviDati(String ID) {
         Random rnd = new Random();
         int numeroMisurazioni = 10;
@@ -133,10 +145,21 @@ public class LocalStorage {
                 gradiMax = gradoGenerato + 2;
                 gradiMin = gradiMin - 1;
                 pressioneGenerata = pressioneGenerata + -1 + rnd.nextDouble(1 + 1);
+                String codiceGenerato = generaCodice(5);
+                while (true) {
+                    if (!codici.contains(codiceGenerato)) {
+                        break;
+                    } else {
+                        codiceGenerato = generaCodice(5);
+                    }
+                }
+                codici.add(codiceGenerato);
                 deltaCo2 = -10 + rnd.nextInt(21);
-
-                bw.write(gradoGenerato + "," + String.format("%.2f", pressioneGenerata) + "," + (livelloCo2 + deltaCo2)
-                        + "\r");
+                bw.write(
+                        generaCodice(5) + "," + gradoGenerato + ","
+                                + String.format(Locale.US, "%.2f", pressioneGenerata) + ","
+                                + (livelloCo2 + deltaCo2)
+                                + "\r");
             }
             bw.close();
             fw.close();
@@ -146,6 +169,8 @@ public class LocalStorage {
 
     }
 
+    // metodo che viene richiamato quando viene creato un nuovo nodo sensore oppure
+    // quando viene ricreato
     public static void creaFileRilevazioni() {
         try {
 
@@ -153,7 +178,7 @@ public class LocalStorage {
             fileRilevazioni.createNewFile();
             FileWriter fwRilevazioni = new FileWriter(fileRilevazioni, true);
             BufferedWriter bwRilevazioni = new BufferedWriter(fwRilevazioni);
-            bwRilevazioni.write("Temperatura,Pressione,Livello Co2 \r");
+            bwRilevazioni.write("Nome,Temperatura,Pressione,Livello Co2 \r");
             bwRilevazioni.close();
             fwRilevazioni.close();
 
@@ -161,6 +186,8 @@ public class LocalStorage {
             System.out.println("Errore: " + error.getMessage());
         }
     }
+    // Il metodo che viene richiamato quando l'utente scrive come input: listdata
+    // local
 
     public static void mostraRilevazioniLocale() {
         try {
@@ -169,24 +196,13 @@ public class LocalStorage {
             FileReader fr = new FileReader(fileInLettura);
             BufferedReader br = new BufferedReader(fr);
             String linea;
+            br.readLine();
             while ((linea = br.readLine()) != null) {
-                System.out.println(linea);
-            }
-            String fileDownload = trovaFile("Download");
-            fileDownload = fileDownload.replaceAll("[\\[\\]]", "");
-            for (int i = 0; i < fileDownload.length(); i++) {
-                System.out.println(fileDownload.split(",")[i]);
-                fr = new FileReader(new File(fileDownload.split(",")[i].trim()));
-                br = new BufferedReader(fr);
-                while ((linea = br.readLine()) != null) {
-                    System.out.println(linea);
-                }
-
-                br.close();
-                fr.close();
+                System.out.println(linea.split(",")[0]);
             }
         } catch (Exception er) {
 
         }
     }
+
 }
