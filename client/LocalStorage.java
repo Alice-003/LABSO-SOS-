@@ -205,4 +205,17 @@ public class LocalStorage {
         }
     }
 
+    public static void resettaIndice(File fileIndice) {
+
+        try {
+            FileWriter fwIndice = new FileWriter(fileIndice);
+            BufferedWriter bwIndice = new BufferedWriter(fwIndice);
+            bwIndice.write("0");
+            bwIndice.close();
+            fwIndice.close();
+        } catch (Exception er) {
+
+        }
+    }
+
 }

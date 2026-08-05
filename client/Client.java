@@ -2,6 +2,7 @@ package client;
 
 import java.io.*;
 import java.net.Socket;
+
 import java.util.Scanner;
 
 import client.protocol.Protocol;
@@ -13,7 +14,8 @@ public class Client {
     public static void main(String[] args) {
         int lunghezzaID = 5;
         String ID;
-        int ultimo_valore_letto = 0;
+        int indiceUltimoValoreLetto = 0;
+        Boolean fileRilevazioniCancellato = false;
 
         if (args.length != 2) {
             System.out.println("Errore input. Riavviare il programma!");
@@ -30,12 +32,18 @@ public class Client {
                 // Se il file delle rilevazioni viene cancellato, allora viene ricreato
                 // Se entrambi i file vengono cancellati, vengono ricreati entrambi i file con
                 // un ID diverso
+                // Inoltre viene fatta una verifica per un controllo riguardante all'indice
+                // dell'ultimo dato trasmesso. Se il file delle rilevazioni
+                // viene cancellato allora l'indice viene resettato a 0
 
                 if (!fileID.exists() && !fileRilevazioni.exists()) {
                     LocalStorage.creaFileID(lunghezzaID);
                     LocalStorage.creaFileRilevazioni();
+                    fileRilevazioniCancellato = true;
                 } else if (fileID.exists() && !fileRilevazioni.exists()) {
                     LocalStorage.creaFileRilevazioni();
+                    fileRilevazioniCancellato = true;
+
                 } else if (!fileID.exists() && fileRilevazioni.exists()) {
                     LocalStorage.creaFileID(lunghezzaID, LocalStorage.ottieniCodice(2));
                 }
@@ -57,19 +65,46 @@ public class Client {
 
                 // Nel caso in cui la registrazione abbia avuto successo
 
+                File fileIndice = new File("client/Files/indice.txt");
+                if (fileRilevazioniCancellato) {
+
+                    LocalStorage.resettaIndice(fileIndice);
+                }
+
                 if (response.split(Protocol.SEPARATORE)[0].equals(Protocol.TUTTO_OK)) {
 
                     FileReader fr = new FileReader(fileRilevazioni);
                     BufferedReader br = new BufferedReader(fr);
                     String str = "";
 
+                    if (!fileIndice.exists()) {
+                        fileIndice.createNewFile();
+                        LocalStorage.resettaIndice(fileIndice);
+                    } else {
+                        FileReader frIndice = new FileReader(fileIndice);
+                        BufferedReader brIndice = new BufferedReader(frIndice);
+                        indiceUltimoValoreLetto = Integer.parseInt(brIndice.readLine());
+                        brIndice.close();
+                        frIndice.close();
+                    }
+
+                    for (int i = 0; i < indiceUltimoValoreLetto; i++) {
+                        br.readLine();
+                    }
                     while ((str = br.readLine()) != null) {
                         to.println(Protocol.AGGIUNGI_RISORSA + Protocol.SEPARATORE + str.split(",")[0]
                                 + Protocol.SEPARATORE + str.split(",")[1] + Protocol.SEPARATORE + str.split(",")[2]
                                 + Protocol.SEPARATORE + str.split(",")[3]);
-                        ultimo_valore_letto++;
+
+                        indiceUltimoValoreLetto++;
+
                     }
 
+                    FileWriter fwIndice = new FileWriter(fileIndice);
+                    BufferedWriter bwIndice = new BufferedWriter(fwIndice);
+                    bwIndice.write(String.valueOf(indiceUltimoValoreLetto));
+                    bwIndice.close();
+                    fwIndice.close();
                     br.close();
                     fr.close();
                 }
@@ -89,11 +124,11 @@ public class Client {
                     /*
                      * se qualcuno interrompe questo thread nel frattempo, terminiamo
                      */
+                    System.out.println("ERRORE INTERCETTATO NEL CATCH:");
+                    e.printStackTrace();
                     return;
                 }
             } catch (Exception er) {
-                System.out.println("Errore: " + er.getMessage());
-
                 return;
             }
 
