@@ -8,9 +8,12 @@ import client.protocol.Protocol;
 
 public class Client {
 
+    public static final Object consoleLock = new Object();
+
     public static void main(String[] args) {
         int lunghezzaID = 5;
         String ID;
+        int ultimo_valore_letto = 0;
 
         if (args.length != 2) {
             System.out.println("Errore input. Riavviare il programma!");
@@ -46,6 +49,7 @@ public class Client {
                 // registrazione all'aggregatore con l'informazione ID del nodo
 
                 PrintWriter to = new PrintWriter(s.getOutputStream(), true);
+
                 to.println(Protocol.RICHIESTA_REGISTRAZIONE_A_SERVER + Protocol.SEPARATORE
                         + LocalStorage.ottieniCodice(1) + Protocol.SEPARATORE + port);
                 Scanner from = new Scanner(s.getInputStream());
@@ -63,7 +67,7 @@ public class Client {
                         to.println(Protocol.AGGIUNGI_RISORSA + Protocol.SEPARATORE + str.split(",")[0]
                                 + Protocol.SEPARATORE + str.split(",")[1] + Protocol.SEPARATORE + str.split(",")[2]
                                 + Protocol.SEPARATORE + str.split(",")[3]);
-
+                        ultimo_valore_letto++;
                     }
 
                     br.close();
@@ -89,6 +93,7 @@ public class Client {
                 }
             } catch (Exception er) {
                 System.out.println("Errore: " + er.getMessage());
+
                 return;
             }
 

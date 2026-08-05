@@ -1,3 +1,5 @@
+package client;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Scanner;
@@ -16,20 +18,30 @@ public class Receiver implements Runnable {
     public void run() {
         try {
             Scanner from = new Scanner(this.s.getInputStream());
-            while (true) {
+
+            while (from.hasNextLine()) {
                 String response = from.nextLine();
-                System.out.println("Received: " + response);
-                if (response.equals("quit")) {
-                    break;
+                synchronized (Client.consoleLock) {
+
+                    if (!response.equals("OK")) {
+                        System.out.println(response);
+                    }
                 }
 
             }
+            from.close();
         } catch (IOException e) {
-            System.err.println("IOException caught: " + e);
-            e.printStackTrace();
+            synchronized (Client.consoleLock) {
+                System.err.println("IOException caught: " + e);
+                e.printStackTrace();
+            }
+
         } finally {
-            this.sender.interrupt();
-            System.out.println("Receiver closed.");
+            synchronized (Client.consoleLock) {
+                this.sender.interrupt();
+                System.out.println("Receiver closed.");
+            }
+
         }
     }
 }

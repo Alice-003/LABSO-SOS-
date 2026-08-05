@@ -23,34 +23,38 @@ public class Sender implements Runnable {
         CommandHandler commandHandler = new CommandHandler();
         try {
             PrintWriter to = new PrintWriter(this.s.getOutputStream(), true);
+
             while (continuaCiclo) {
-                System.out.print("> ");
-                input = scn.nextLine();
-                comando = commandHandler.gestioneComandi(input);
-                switch (comando) {
-                    case 1:
-                        System.out.println("Risorse:");
-                        LocalStorage.mostraRilevazioniLocale();
-                        break;
-                    case 2:
-                        break;
-                    case 3:
-                        continuaCiclo = false;
-                        break;
-                    case 4:
-                        break;
-                    case 5:
-                        break;
-                    case -1:
-                        System.out.println("Comando non valido!");
-                        break;
+                synchronized (Client.consoleLock) {
+                    synchronized (Client.consoleLock) {
+                        System.out.print("> ");
+                        input = scn.nextLine();
+                        comando = commandHandler.gestioneComandi(input);
+                        switch (comando) {
+                            case 1:
+                                System.out.println("Risorse:");
+                                LocalStorage.mostraRilevazioniLocale();
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                to.close();
+                                continuaCiclo = false;
+                                break;
+                            case 4:
+                                break;
+                            case 5:
+                                break;
+                            case -1:
+                                System.out.println("Comando non valido!");
+                                break;
+                        }
+                    }
                 }
 
             }
             System.out.println("Sender closed.");
-        } catch (
-
-        IOException e) {
+        } catch (IOException e) {
             System.err.println("IOException caught: " + e);
             e.printStackTrace();
         } finally {
