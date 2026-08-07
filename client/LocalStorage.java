@@ -31,7 +31,7 @@ public class LocalStorage {
         return codice;
     }
 
-    private static String trovaFile(String prefisso) {
+    public static String trovaFile(String prefisso) {
         Path dir = Paths.get("client/Files/");
 
         try (Stream<Path> stream = Files.list(dir)) {
@@ -200,6 +200,8 @@ public class LocalStorage {
             while ((linea = br.readLine()) != null) {
                 System.out.println(linea.split(",")[0]);
             }
+            br.close();
+            fr.close();
         } catch (Exception er) {
 
         }

@@ -22,7 +22,6 @@ public class Receiver implements Runnable {
             while (from.hasNextLine()) {
                 String response = from.nextLine();
                 synchronized (Client.consoleLock) {
-
                     if (!response.equals("OK")) {
                         System.out.println(response);
                     }

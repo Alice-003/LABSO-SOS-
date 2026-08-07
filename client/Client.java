@@ -95,9 +95,7 @@ public class Client {
                         to.println(Protocol.AGGIUNGI_RISORSA + Protocol.SEPARATORE + str.split(",")[0]
                                 + Protocol.SEPARATORE + str.split(",")[1] + Protocol.SEPARATORE + str.split(",")[2]
                                 + Protocol.SEPARATORE + str.split(",")[3]);
-
                         indiceUltimoValoreLetto++;
-
                     }
 
                     FileWriter fwIndice = new FileWriter(fileIndice);
@@ -129,6 +127,7 @@ public class Client {
                     return;
                 }
             } catch (Exception er) {
+                System.out.println(er.getMessage());
                 return;
             }
 
