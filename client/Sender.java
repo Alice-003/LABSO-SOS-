@@ -47,8 +47,12 @@ public class Sender implements Runnable {
                                 continuaCiclo = false;
                                 break;
                             case 4:
+                                // In questo caso l'utente vuole aggiungere manualmente una rilevazione
+
                                 String[] strSplit = input.split(" ");
                                 Boolean nomeScrittoPrecedenza = false;
+                                // la stringa di input deve essere formata da add nomeRisorsa temperatura
+                                // pressione LivelloCo2
                                 if (strSplit.length != 5) {
                                     System.out.println("Errore: numero di parametri non valido");
                                 } else {
@@ -59,6 +63,8 @@ public class Sender implements Runnable {
                                     BufferedReader br = new BufferedReader(fr);
                                     String str;
                                     br.readLine();
+                                    // Viene fatta una lettura dei nomi delle rilevazioni, dato che i nomi delle
+                                    // rilevazioni deve essere univoca
                                     while ((str = br.readLine()) != null) {
                                         if (str.split(",")[0].equals(strSplit[1])) {
                                             nomeScrittoPrecedenza = true;
@@ -66,6 +72,9 @@ public class Sender implements Runnable {
                                     }
                                     br.close();
                                     fr.close();
+                                    // Se il nome non è presente il seguente codice all'interno dell'if si occupa di
+                                    // aggiungere la rilevazione dell'utente
+                                    // e si aggiorna l'indice dell'ultima rilevazione trasmessa al server
                                     if (!nomeScrittoPrecedenza) {
                                         FileWriter fwFileRilevazioni = new FileWriter(fileRilevzioni, true);
                                         BufferedWriter bwFileRilevazioni = new BufferedWriter(fwFileRilevazioni);
