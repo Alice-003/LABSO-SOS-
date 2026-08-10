@@ -3,8 +3,6 @@ package client;
 import java.io.*;
 import java.net.Socket;
 
-import java.util.Scanner;
-
 import client.protocol.Protocol;
 
 public class Client {
@@ -60,14 +58,20 @@ public class Client {
 
                 to.println(Protocol.RICHIESTA_REGISTRAZIONE_A_SERVER + Protocol.SEPARATORE
                         + LocalStorage.ottieniCodice(1) + Protocol.SEPARATORE + port);
-                Scanner from = new Scanner(s.getInputStream());
-                String response = from.nextLine();
+                InputStream is = s.getInputStream();
+                StringBuilder sb = new StringBuilder();
+                int b;
+                while ((b = is.read()) != -1 && b != '\n') {
+                    if (b != '\r') { // ignora il carriage return
+                        sb.append((char) b);
+                    }
+                }
+                String response = sb.toString();
 
                 // Nel caso in cui la registrazione abbia avuto successo
 
                 File fileIndice = new File("client/Files/indice.txt");
                 if (fileRilevazioniCancellato) {
-
                     LocalStorage.resettaIndice(fileIndice);
                 }
 
@@ -105,6 +109,7 @@ public class Client {
                     fwIndice.close();
                     br.close();
                     fr.close();
+
                 }
 
                 Thread sender = new Thread(new Sender(s));
@@ -115,7 +120,7 @@ public class Client {
                     /* rimane in attesa che sender e receiver terminino la loro esecuzione */
                     sender.join();
                     receiver.join();
-                    from.close();
+
                     s.close();
                     System.out.println("Socket closed");
                 } catch (InterruptedException e) {

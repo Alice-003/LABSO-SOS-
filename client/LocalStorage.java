@@ -198,13 +198,36 @@ public class LocalStorage {
             String linea;
             br.readLine();
             while ((linea = br.readLine()) != null) {
-                System.out.println(linea.split(",")[0]);
+                System.out.println("- " + linea.split(",")[0]);
             }
             br.close();
             fr.close();
         } catch (Exception er) {
 
         }
+    }
+
+    public static Boolean nomeRilevazionePresente(String nome) {
+        try {
+            File fileRilevzioni = new File("client/Files/" + LocalStorage.trovaFile("Rilevazioni"));
+            FileReader fr = new FileReader(fileRilevzioni);
+            BufferedReader br = new BufferedReader(fr);
+            String str;
+            br.readLine();
+            // Viene fatta una lettura dei nomi delle rilevazioni, dato che i nomi delle
+            // rilevazioni deve essere univoca
+            while ((str = br.readLine()) != null) {
+                if (str.split(",")[0].equals(nome)) {
+                    return true;
+                }
+            }
+            br.close();
+            fr.close();
+        } catch (Exception er) {
+            System.out.println("Errore: " + er.getMessage());
+        }
+
+        return false;
     }
 
     public static void resettaIndice(File fileIndice) {

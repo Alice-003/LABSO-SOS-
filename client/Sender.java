@@ -10,6 +10,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
+import client.protocol.Protocol;
+
 public class Sender implements Runnable {
 
     Socket s;
@@ -41,6 +43,8 @@ public class Sender implements Runnable {
                                 LocalStorage.mostraRilevazioniLocale();
                                 break;
                             case 2:
+                                to.println("LISTDATA_REMOTE");
+
                                 break;
                             case 3:
                                 to.close();
@@ -50,56 +54,50 @@ public class Sender implements Runnable {
                                 // In questo caso l'utente vuole aggiungere manualmente una rilevazione
 
                                 String[] strSplit = input.split(" ");
-                                Boolean nomeScrittoPrecedenza = false;
+
                                 // la stringa di input deve essere formata da add nomeRisorsa temperatura
                                 // pressione LivelloCo2
                                 if (strSplit.length != 5) {
                                     System.out.println("Errore: numero di parametri non valido");
                                 } else {
-                                    File fileRilevzioni = new File(
-                                            "client/Files/" + LocalStorage.trovaFile("Rilevazioni"));
 
-                                    FileReader fr = new FileReader(fileRilevzioni);
-                                    BufferedReader br = new BufferedReader(fr);
-                                    String str;
-                                    br.readLine();
-                                    // Viene fatta una lettura dei nomi delle rilevazioni, dato che i nomi delle
-                                    // rilevazioni deve essere univoca
-                                    while ((str = br.readLine()) != null) {
-                                        if (str.split(",")[0].equals(strSplit[1])) {
-                                            nomeScrittoPrecedenza = true;
-                                        }
-                                    }
-                                    br.close();
-                                    fr.close();
                                     // Se il nome non è presente il seguente codice all'interno dell'if si occupa di
                                     // aggiungere la rilevazione dell'utente
                                     // e si aggiorna l'indice dell'ultima rilevazione trasmessa al server
-                                    if (!nomeScrittoPrecedenza) {
-                                        FileWriter fwFileRilevazioni = new FileWriter(fileRilevzioni, true);
-                                        BufferedWriter bwFileRilevazioni = new BufferedWriter(fwFileRilevazioni);
-                                        String strScritta = "";
+                                    File fileRilevzioni = new File(
+                                            "client/Files/" + LocalStorage.trovaFile("Rilevazioni"));
+                                    if (!LocalStorage.nomeRilevazionePresente(strSplit[1])) {
+                                        try {
+                                            FileWriter fwFileRilevazioni = new FileWriter(fileRilevzioni, true);
+                                            BufferedWriter bwFileRilevazioni = new BufferedWriter(fwFileRilevazioni);
+                                            String strScritta = "";
 
-                                        int temperatura = Integer.parseInt(strSplit[2]);
-                                        double pressione = Double.parseDouble(strSplit[3]);
-                                        int livelloCo2 = Integer.parseInt(strSplit[4]);
-                                        strScritta = strSplit[1] + "," + String.valueOf(temperatura) + ","
-                                                + String.valueOf(pressione) + "," + String.valueOf(livelloCo2);
-
-                                        bwFileRilevazioni.write(strScritta + "\r");
-                                        bwFileRilevazioni.close();
-                                        fwFileRilevazioni.close();
-                                        File fileIndice = new File("client/Files/indice.txt");
-                                        FileReader frIndice = new FileReader(fileIndice);
-                                        BufferedReader brIndice = new BufferedReader(frIndice);
-                                        int indice = Integer.parseInt(brIndice.readLine());
-                                        brIndice.close();
-                                        frIndice.close();
-                                        FileWriter fwIndice = new FileWriter(fileIndice, false);
-                                        BufferedWriter bwIndice = new BufferedWriter(fwIndice);
-                                        bwIndice.write(String.valueOf(indice + 1));
-                                        bwIndice.close();
-                                        fwIndice.close();
+                                            int temperatura = Integer.parseInt(strSplit[2]);
+                                            double pressione = Double.parseDouble(strSplit[3]);
+                                            int livelloCo2 = Integer.parseInt(strSplit[4]);
+                                            strScritta = strSplit[1] + "," + String.valueOf(temperatura) + ","
+                                                    + String.valueOf(pressione) + "," + String.valueOf(livelloCo2);
+                                            to.println(Protocol.AGGIUNGI_RISORSA + Protocol.SEPARATORE + strSplit[1]
+                                                    + Protocol.SEPARATORE
+                                                    + temperatura + Protocol.SEPARATORE + pressione
+                                                    + Protocol.SEPARATORE + livelloCo2 + "\r");
+                                            bwFileRilevazioni.write(strScritta + "\r");
+                                            bwFileRilevazioni.close();
+                                            fwFileRilevazioni.close();
+                                            File fileIndice = new File("client/Files/indice.txt");
+                                            FileReader frIndice = new FileReader(fileIndice);
+                                            BufferedReader brIndice = new BufferedReader(frIndice);
+                                            int indice = Integer.parseInt(brIndice.readLine());
+                                            brIndice.close();
+                                            frIndice.close();
+                                            FileWriter fwIndice = new FileWriter(fileIndice, false);
+                                            BufferedWriter bwIndice = new BufferedWriter(fwIndice);
+                                            bwIndice.write(String.valueOf(indice + 1));
+                                            bwIndice.close();
+                                            fwIndice.close();
+                                        } catch (NumberFormatException er) {
+                                            System.out.println("Errore: I paramentri devono essere numeri");
+                                        }
 
                                     } else {
                                         System.out.println("Una rilevazione possiede già questo nome");
@@ -107,9 +105,12 @@ public class Sender implements Runnable {
                                 }
                                 break;
                             case 5:
+                                to.println("DOWNLOAD_REQUEST" + Protocol.SEPARATORE + input.split(" ")[1]);
+                                DownloadManager.cerca_rilevazione_da_rete();
                                 break;
                             case -1:
-                                System.out.println("Comando non valido!");
+                                System.out.println(
+                                        "Comando non valido: 'listdata local' 'listdata remote' 'download' 'quit'");
                                 break;
                         }
                     }
