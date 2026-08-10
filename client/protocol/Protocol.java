@@ -12,5 +12,6 @@ public class Protocol {
     public static final String RICHIESTA_RISORSA_DA_NODO = "RICHIESTA_RISORSA_DA_NODO";
     public static final String RICHIESTA_NODO_CON_RISORSA = "RICHIESTA_NODO_CON_RISORSA";
     public static final String DESTINATARIO_SERVER = "SERVER";
+    public static final String FINE_TRASMISSIONE_NODO_NODO = "END";
 
 }
