@@ -1,7 +1,7 @@
 package client.protocol;
 
 public class Protocol {
-    
+
     public static final String RICHIESTA_TEMPERATURA = "TEMPERATURA";
     public static final String RICHIESTA_PRESSIONE = "PRESSIONE";
     public static final String RICHIESTA_CONCENTRAZIONE = "CONCENTRAZIONE";
@@ -13,5 +13,10 @@ public class Protocol {
     public static final String RICHIESTA_NODO_CON_RISORSA = "RICHIESTA_NODO_CON_RISORSA";
     public static final String DESTINATARIO_SERVER = "SERVER";
     public static final String FINE_TRASMISSIONE_NODO_NODO = "END";
+    public static final String RICHIESTA_REGISTRAZIONE_A_SERVER = "REGISTER";
+    public static final String SEPARATORE = " ";
+    public static final String TUTTO_OK = "OKBenvenuto";
+    public static final String AGGIUNGI_RISORSA = "ADD";
+    public static final String REGISTRO_GIA_EFFETTUATO = "REGISTRO GIA EFFETTUATO";
 
 }
