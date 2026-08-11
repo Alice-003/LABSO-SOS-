@@ -16,18 +16,23 @@ public class Receiver implements Runnable {
 
     @Override
     public void run() {
+
         try {
             Scanner from = new Scanner(this.s.getInputStream());
 
             while (from.hasNextLine()) {
                 String response = from.nextLine();
                 synchronized (Client.consoleLock) {
-                    if (!response.equals("OK")) {
+                    if (!response.equals("OK") && !response.equals("DATA") && !response.equals("END")) {
                         System.out.println(response);
                     }
-                }
 
+                }
             }
+            synchronized (Client.consoleLock) {
+                System.out.print("> ");
+            }
+
             from.close();
         } catch (IOException e) {
             synchronized (Client.consoleLock) {

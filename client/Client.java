@@ -74,7 +74,7 @@ public class Client {
                 if (fileRilevazioniCancellato) {
                     LocalStorage.resettaIndice(fileIndice);
                 }
-
+                System.out.println(response);
                 if (response.split(Protocol.SEPARATORE)[0].equals(Protocol.TUTTO_OK)) {
 
                     FileReader fr = new FileReader(fileRilevazioni);
