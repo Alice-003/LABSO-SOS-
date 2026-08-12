@@ -133,7 +133,7 @@ public class ClientHandler implements Runnable {
                                 resourceTable.registerNodes(nodeName, resourceList, nodeIp, nodePort);
 
                                 System.out.println("Nodo registrato: " + nodeName + " @ " + nodeIp + ":" + nodePort);
-                                to.println(Aggregator_Protocol.OK + "Benvenuto " + nodeName);
+                                to.println(Aggregator_Protocol.OK + " Benvenuto " + nodeName);
                                 break;
 
                             case Aggregator_Protocol.ADD:
@@ -145,8 +145,8 @@ public class ClientHandler implements Runnable {
                                 }
                                 
                                 // ADD richiede sia il nome della risorsa che il contenuto
-                                if(!msg.hasAtLeast(2)){
-                                    to.println(Aggregator_Protocol.ERROR + " Formato errato, serve: ADD nomeRisorsa contenuto");
+                                if(!msg.hasAtLeast(1)){
+                                    to.println(Aggregator_Protocol.ERROR + " Formato errato, serve: ADD nomeRisorsa");
                                     break;
                                 }
                                 // nome della rilevazione è il primo argomento
