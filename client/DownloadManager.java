@@ -1,222 +1,90 @@
-package client;
-
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import client.protocol.Protocol;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 
+public class DownloadManager implements Runnable {
 
-public class DownloadManager {
+    public int porta;     
 
-    public DownloadManager() {}
-
-    //Tipo di rilevazione = risorsa
-
-
-    //Metodo per dare al client la scelta dell'attività da eseguire
-    public String scelta_azione() {
-
-        //Creo uno scanner per ricevere la preferenza dell'utente
-        Scanner userInput = new Scanner(System.in);
-        String scelta = null;
-
-        try {
-            System.out.println("Cosa vuoi fare? Digita il numero corrispondente");
-            System.out.println("1 - Richiedi ad aggregatore la lista dei nodi attivi");
-            System.out.println("2 - Richiedi ad aggregatore quale nodo possiede una determinata rilevazione");
-            System.out.println("3 - Richiedi l'accesso ad un nodo e scarica la rilevazione in locale");
-            System.out.println("4 - Cerca e scarica una rilevazione dalla rete");
-
-            scelta = userInput.nextLine();
-
-        } catch (Exception e){
-            System.out.println("Errore nella richiesta: " + e.getMessage());
-            }
-
-        userInput.close();
-        return scelta;
+    public DownloadManager(int porta) {
+        this.porta = porta;
     }
 
-    //Metodo per dire che tipo di risorsa si voglia cercare di ottenere
-    public String cerca_rilevazione_da_rete() {
+    @Override
+    public synchronized void run() {
 
-        String richiesta = null;
+       try {
 
-        //Creo uno scanner per ricevere la preferenza dell'utente
-        Scanner userInput = new Scanner(System.in);
+        //creo una connessione stile server per far connettere il nodo che deve inviare i dati
+        ServerSocket server = new ServerSocket(porta);
+        Socket s = server.accept();
 
+        String file_download_risorse_txt = "dati_ricevuti.txt";
+        File file_download_risorse = new File(file_download_risorse_txt);
+
+        //creo il file per scrivere le risorse ricevute, se esiste già non faccio nulla
         try {
-            System.out.println("Che tipo di risorsa stai cercando? Digita il numero corrispondente");
-            System.out.println("1 - Temperatura");
-            System.out.println("2 - Pressione atomosferica");
-            System.out.println("3 - Concentrazione di CO2");
-
-            String scelta = userInput.nextLine();
-
-            //Genero la richiesta in base al numero selezionato.
-            switch (scelta) {
-                case "1": richiesta = Protocol.RICHIESTA_TEMPERATURA; break;
-                case "2": richiesta = Protocol.RICHIESTA_PRESSIONE; break;
-                case "3": richiesta = Protocol.RICHIESTA_CONCENTRAZIONE; break;
-                default: System.out.println("Scelta non valida"); richiesta = Protocol.ERRORE; break;
+            if(file_download_risorse.createNewFile()) {
+                System.out.println("Creato File: " + file_download_risorse_txt);
+            } else {
+                System.out.println("Il file download risorse esiste gia'.");
+                } 
+        } catch (Exception e) {
+            System.err.println("Errore nella creazione del file: " + e.getMessage());
             }
 
-        } catch (Exception e){
-            System.out.println("Errore nella richiesta: " + e.getMessage());
-        }
+        System.out.println("Connessione stabilita.");
+
+
+        //mi creo gli strumenti per leggere i dati che ricevo dal nodo che invia
+        //per inviare la conferma di fine lavoro al nodo e per scrivere sul file .txt i dati 
+        BufferedReader leggi_dati_ricevuti = new BufferedReader(new InputStreamReader(s.getInputStream()));
+        PrintWriter rispondi_al_client = new PrintWriter(s.getOutputStream(), true);
+        BufferedWriter scrivi_dati = new BufferedWriter(new FileWriter(file_download_risorse_txt, true));
         
-        userInput.close();
-        return richiesta;
-    }
+        String dati;
+        boolean continua = true;
 
-    //Metodo per ottenere la lista degli id dei nodi attivi
-    public synchronized String ottieni_lista_nodi(String id_nodo) {
+        //per ogni elemento di tipo string che ricevo dal nodo 
+        //(che corrisponde ad una riga sul file che mi sta inviando)
+        //scrivo una riga sul mio file .txt
+        //se ricevo la stringa END so che il nodo che mi invia i dati ha finito di inviare, 
+        //invio così a mia volta END per dire che ho finito di ricevere
 
-        String sms = null;
-
-        try {
-            System.out.println("Download manager: Richiedo al server la lista dei nodi attivi..");
-            sms = Protocol.RICHIESTA_LISTA_NODI;
-        } catch (Exception e){
-            System.out.println("Errore nella richiesta: " + e.getMessage());
-            }
-
-        return sms;
-    }
-
-    //Metodo per chiedere al server quale nodo abbia la risorsa che vogliamo
-    public synchronized String richiedi_id_nodo_con_risorsa_voluta() {
-        String sms = null;
-
-        try {
-            String risorsa = cerca_rilevazione_da_rete();
-
-            if (!risorsa.equals(Protocol.ERRORE)) {
-                System.out.println("Download manager: Richiedo al server quale nodo abbia la risorsa: " + risorsa);
-                sms = Protocol.RICHIESTA_NODO_CON_RISORSA + " " + risorsa;
+        while((dati = leggi_dati_ricevuti.readLine()) != null && continua == true) {
+            if(dati.equals(Protocol.FINE_TRASMISSIONE_NODO_NODO)) {
+                continua = false;
+                rispondi_al_client.println(Protocol.FINE_TRASMISSIONE_NODO_NODO);
+                System.out.println("Invio comando chiusura al nodo client");
             } else {
-                System.out.println("Download manager: Errore nella richiesta.");
-                }
-        } catch (Exception e) {
-            System.err.println("Errore nel download delle risorse: " + e.getMessage());
-        }
-        return sms;
-    }
-
-    //Metodo per richiedere il tipo di risorsa da un nodo specifico
-    public synchronized String richiesta_accesso_nodo(){
-
-        Scanner userInput = new Scanner(System.in);
-        String sms = null;
-
-        try {
-            System.out.print("\nInserisci l'ID del nodo a cui vuoi accedere: ");
-
-            String id_nodo = userInput.nextLine();
-            
-            String risorsa = cerca_rilevazione_da_rete();
-
-            String data = id_nodo + " " + risorsa;
-            
-            if (!risorsa.equals(Protocol.ERRORE)) {
-                System.out.println("Download manager: Invio di richiesta di accesso a nodo: " + id_nodo);
-                sms = Protocol.RICHIESTA_DOWNLOAD_DA_NODO + " " + data;
-            } else {
-                System.out.println("Download manager: Errore nella richiesta.");
-                }
-            
-        } catch (Exception e) {
-            System.out.println("Errore nella richiesta di accesso: " + e.getMessage());
-        }
-
-        userInput.close();
-        return sms;
-    }
-
-    //Metodo per richiedere al server il download di una risorsa
-    public synchronized String richiesta_download_da_server(String risorsa) {
-        String sms = null;
-
-        try {
-            System.out.println("Download Manager: Richiedo al server la risorsa: " + risorsa);
-            sms = Protocol.RICHIESTA_DOWNLOAD_DA_RETE + " " + risorsa;
-        } catch (Exception e) {
-            System.out.println("Errore nella richiesta di accesso: " + e.getMessage());
-        }
-        return sms;
-    }
-
-    //Metodo che deve usare local storage per immagazzinare i dati ricevuti da nodo aggregatore (il server)
-    public synchronized void salva_dati(HashMap<String, String> risorse, String id_nodo) {
-        try {
-            
-            String file_download_risorse_txt = "Download_risorse_nodo_" + id_nodo + ".txt";
-            File file_download_risorse = new File(file_download_risorse_txt);
-
-            //creo il file per scrivere le risorse richieste, se esiste già non faccio nulla
-            try {
-                if(file_download_risorse.createNewFile()) {
-                    System.out.println("Creato File: " + file_download_risorse_txt);
-                } else {
-                    System.out.println("Il file download risorse esiste gia'.");
-                    } 
-            } catch (Exception e) {
-                System.err.println("Errore nella creazione del file: " + e.getMessage());
+                scrivi_dati.write(dati);
+                scrivi_dati.newLine();
             }
-
-            //Scrivo sul file .txt le risorse che ricevo dal server
-            BufferedWriter writer_temp = new BufferedWriter(new FileWriter(file_download_risorse_txt, true));
-
-            for (Map.Entry<String, String> elemento : risorse.entrySet()) {
-            //Per ogni entry delle risorse mi vado a prendere la chiave e il valore
-            String chiave = elemento.getKey();
-            String valore = elemento.getValue();
-
-            //Le combino in una stringa unica
-            String temp = chiave + " " + valore;
-            System.out.println ("Creata stringa da salvare: " + temp);
-
-            //La scrivo nel file .txt
-            writer_temp.write(temp);
-            System.out.println("Inserito in file txt la risorsa: " + temp);
-            writer_temp.newLine();
-            }
-            
-            writer_temp.close();
-
-        } catch (Exception e) {
-            System.err.println("Errore nel download delle risorse: " + e.getMessage());
         }
-    }
 
-    //Metodo per stampare la lista dei nodi ricevuti dal server che possiedono la rilevazione che si desidera
-    public void stampa_lista_nodi_da_server(HashMap<String, String> risorse) {
+        //chiudo lo "scrittore" su file
+        scrivi_dati.close();
 
-        try {
-            for (Map.Entry<String, String> elemento : risorse.entrySet()) {
-            String chiave = elemento.getKey();
-            String valore = elemento.getValue();
-            System.out.println("Nodo: " + chiave + " Risorsa: " + valore);
-            }
-        } catch (Exception e) {
-            System.err.println("Errore nella stampa dei nodi: " + e.getMessage());
+        //chiudo tutte le connessioni rimaste attive
+        if (s != null && !s.isClosed()) {
+            s.close(); // Chiudiamo la sessione con questo specifico client
         }
-    }
 
-    //Metodo che stampa la lista degli id dei nodi attivi
-    public void stampa_lista_nodi_attivi(List<String> lista_nodi) {
-        try {
-            for(int i=0; i<lista_nodi.size(); i++) {
-                System.out.println("Nodo Attivo: " + lista_nodi.get(i));
-            }
-        } catch (Exception e) {
-            System.err.println("Errore nella stampa dei nodi attivi: " + e.getMessage());
+        if (server != null && !server.isClosed()) {
+            server.close(); // Liberiamo definitivamente la porta del PC
         }
+
+        System.out.println("Connessione con nodo mittende terminata.");
+
+    } catch (Exception e) {
+        System.err.println("Errore nel download delle risorse: " + e.getMessage());
+        } 
+                    
     }
-
-
+    
 }
