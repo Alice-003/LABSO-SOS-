@@ -300,6 +300,8 @@ public class ClientHandler implements Runnable {
             }            
                 // inviamo il quit e chiudiamo la socket una volta usciti dal ciclo
                 to.println(Aggregator_Protocol.QUIT);
+                from.close();
+                to.close();
                 s.close();
                 System.out.println("Closed");
 
