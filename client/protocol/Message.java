@@ -1,4 +1,4 @@
-import java.io.Serializable;
+/*import java.io.Serializable;
 
 public class Message implements Serializable {
 
@@ -20,3 +20,4 @@ public class Message implements Serializable {
     public Object getData() { return data; }
 
 }
+*/

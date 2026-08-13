@@ -1,3 +1,6 @@
+package client;
+
+import client.protocol.Protocol;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -17,10 +20,8 @@ public class UploadManager implements Runnable{
     @Override
     public synchronized void run() {
 
-        try {
-
-            //Creo la connessione con il nodo che deve ricevere i dati
-            Socket s = new Socket("localhost", porta);
+        //Creo la connessione con il nodo che deve ricevere i dati e uso un try with resource che garantisce la chiusura automatica del socket
+        try (Socket s = new Socket("localhost", porta);){
 
             //Vado a leggere il file con i dati da inviare
             File dati_da_inviare = new File("client/Files/" + LocalStorage.trovaFile("Rilevazioni"));

@@ -208,21 +208,20 @@ public class LocalStorage {
     }
 
     public static Boolean nomeRilevazionePresente(String nome) {
-        try {
-            File fileRilevzioni = new File("client/Files/" + LocalStorage.trovaFile("Rilevazioni"));
-            FileReader fr = new FileReader(fileRilevzioni);
-            BufferedReader br = new BufferedReader(fr);
+        /*uso try withresources che chiude automaticamente fr e br anche se si fa return nel mezzo e
+        il percorso del file è passato direttamente a FileReader, senza variabile intermedia*/
+        try(FileReader fr = new FileReader("client/Files/" + LocalStorage.trovaFile("Rilevazioni"));
+            BufferedReader br = new BufferedReader(fr)) {
+            
             String str;
             br.readLine();
             // Viene fatta una lettura dei nomi delle rilevazioni, dato che i nomi delle
             // rilevazioni deve essere univoca
             while ((str = br.readLine()) != null) {
                 if (str.split(",")[0].equals(nome)) {
-                    return true;
+                    return true; //br e fr vengono chiusi automaticamente
                 }
             }
-            br.close();
-            fr.close();
         } catch (Exception er) {
             System.out.println("Errore: " + er.getMessage());
         }

@@ -45,6 +45,7 @@ public class Sender implements Runnable {
                         to.println("LISTDATA_REMOTE");
                         break;
                     case 3:
+                        to.println("QUIT");
                         to.close();
                         continuaCiclo = false;
                         break;
