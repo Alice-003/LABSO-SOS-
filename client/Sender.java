@@ -20,6 +20,8 @@ public class Sender implements Runnable {
         this.s = s;
     }
 
+    public static String nomeRilevazioneDownload;
+
     @Override
     public void run() {
         System.out.println("DEBUG: Thread Sender avviato!");
@@ -34,7 +36,7 @@ public class Sender implements Runnable {
             while (continuaCiclo) {
                 System.out.print("> ");
                 input = scn.nextLine();
-
+                String[] strSplit = input.split(" ");
                 comando = commandHandler.gestioneComandi(input);
                 switch (comando) {
                     case 1:
@@ -50,8 +52,6 @@ public class Sender implements Runnable {
                         break;
                     case 4:
                         // In questo caso l'utente vuole aggiungere manualmente una rilevazione
-
-                        String[] strSplit = input.split(" ");
 
                         // la stringa di input deve essere formata da add nomeRisorsa temperatura
                         // pressione LivelloCo2
@@ -105,6 +105,7 @@ public class Sender implements Runnable {
                         break;
                     case 5:
                         to.println("DOWNLOAD_REQUEST" + Protocol.SEPARATORE + input.split(" ")[1]);
+                        Sender.nomeRilevazioneDownload = strSplit[1];
 
                         break;
                     case -1:
