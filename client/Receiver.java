@@ -23,6 +23,9 @@ public class Receiver implements Runnable {
         try {
             Scanner from = new Scanner(this.s.getInputStream());
 
+            // Creiamo il PrintWriter qui, usando la stessa socket del Receiver
+            // per mantenere aperta la comunicazione con l'aggregatore
+
             while (from.hasNextLine()) {
                 String response = from.nextLine();
                 String[] strSPLIT = response.split(Protocol.SEPARATORE);
@@ -31,8 +34,12 @@ public class Receiver implements Runnable {
                     System.out.println(response);
                     System.out.println(Sender.nomeRilevazioneDownload);
                     PrintWriter toAggregator = new PrintWriter(s.getOutputStream(), true);
-                    UploadManager up = new UploadManager(strSPLIT[3], Integer.parseInt(strSPLIT[4]), strSPLIT[1],
-                            toAggregator, strSPLIT[2]);
+                    String ip = strSPLIT[2];
+                    int porta = Integer.parseInt(strSPLIT[3]);
+                    String nomeRilevazione = strSPLIT[4];
+                    String nomePeer = strSPLIT[1];
+
+                    UploadManager up = new UploadManager(ip, porta, nomeRilevazione, nomePeer, toAggregator);
                     Thread upThread = new Thread(up);
                     upThread.setDaemon(true);
                     upThread.start();
