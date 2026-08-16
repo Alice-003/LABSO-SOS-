@@ -50,9 +50,8 @@ public class DownloadManager implements Runnable {
 
                 if (listaFile != null) {
                     for (File fileRilevazioni : listaFile) {
-                        // Verifichiamo che sia un file (e non una sottocartella) e che finisca per .txt
-                        // o .csv
-                        if (fileRilevazioni.isFile() || fileRilevazioni.getName().endsWith(".csv")) {
+                        // Verifichiamo che sia un file e che finisca per .csv
+                        if (fileRilevazioni.isFile() && fileRilevazioni.getName().endsWith(".csv")) {
 
                             try (BufferedReader fileReader = new BufferedReader(new FileReader(fileRilevazioni))) {
                                 String riga;
