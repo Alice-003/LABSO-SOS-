@@ -55,9 +55,13 @@ public class Client {
                 // registrazione all'aggregatore con l'informazione ID del nodo
 
                 PrintWriter to = new PrintWriter(s.getOutputStream(), true);
-
+                DownloadManager dw = new DownloadManager();
+                Thread thDownloadManager = new Thread(dw);
+                thDownloadManager.setDaemon(true);
+                thDownloadManager.start();
+                System.out.println("Porta lato sever nodo: " + dw.getLocalPort());
                 to.println(Protocol.RICHIESTA_REGISTRAZIONE_A_SERVER + Protocol.SEPARATORE
-                        + LocalStorage.ottieniCodice(1) + Protocol.SEPARATORE + port);
+                        + LocalStorage.ottieniCodice(1) + Protocol.SEPARATORE + dw.getLocalPort());
                 InputStream is = s.getInputStream();
                 StringBuilder sb = new StringBuilder();
                 int b;
