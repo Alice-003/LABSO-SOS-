@@ -1,85 +1,72 @@
 package client;
 
 import client.protocol.Protocol;
+import aggregator.protocol.Aggregator_Protocol;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class UploadManager implements Runnable{
+public class UploadManager implements Runnable {
 
+    String ip;
     int porta;
-    String id_nodo;
+    String nomeRilevazione;
+    String nomePeer;
+    PrintWriter toAggregator;
 
-    public UploadManager(int porta) {
+    public UploadManager(String ip, int porta, String nomeRilevazione, String nomePeer, PrintWriter toAggregator) {
+        this.ip = ip;
         this.porta = porta;
+        this.nomeRilevazione = nomeRilevazione;
+        this.nomePeer = nomePeer;
+        this.toAggregator = toAggregator;
     }
 
     @Override
     public synchronized void run() {
-
+        
         //Creo la connessione con il nodo che deve ricevere i dati e uso un try with resource che garantisce la chiusura automatica del socket
-        try (Socket s = new Socket("localhost", porta);){
+        try (Socket s = new Socket(ip, porta);){
+            System.out.println("Connessione al peer " + ip + ":" + porta + " per: " + nomeRilevazione);
 
-            //Vado a leggere il file con i dati da inviare
-            File dati_da_inviare = new File("client/Files/" + LocalStorage.trovaFile("Rilevazioni"));
-            
-            //Controllo che il file esista
-            if(dati_da_inviare.exists() != true) {
-                System.out.println("Non trovo il file dove leggere i dati da inviare");
-                return;
+            PrintWriter toPeer = new PrintWriter(s.getOutputStream(), true);
+            BufferedReader fromPeer = new BufferedReader(new InputStreamReader(s.getInputStream()));
+
+            toPeer.println(nomeRilevazione);
+
+            File fileRilevazioniDownload = new File("client/Files/dati_ricevuti.csv");
+            if (!fileRilevazioniDownload.exists()) {
+                fileRilevazioniDownload.createNewFile();
             }
 
-            //Mi creo i miei strumenti per inviare i dati al nodo, leggere il file e ricevere dal nodo l'ok di fine lavoro
-            PrintWriter invia_dati = new PrintWriter(s.getOutputStream(), true);
-            BufferedReader leggi_file = new BufferedReader(new FileReader(dati_da_inviare));
-            BufferedReader ricevi_conferma_da_server = new BufferedReader(new InputStreamReader(s.getInputStream()));
-
-            System.out.println("Connessione nodo-nodo stabilita: mi preparo da inviare i dati..");
-
-            String riga_da_inviare;
-
-            //Leggo il file: per ogni riga scritta nel file, invio una stringa al nodo ricevente
-            //Se il thread si interrompe, mando la stringa END per chiudere la connessione
-            while((riga_da_inviare = leggi_file.readLine()) != null) {
-
-                if (Thread.interrupted()) {
-                    invia_dati.println(Protocol.FINE_TRASMISSIONE_NODO_NODO);
-                    break;
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileRilevazioniDownload, true))) {
+                String rigaRicevuta;
+                while ((rigaRicevuta = fromPeer.readLine()) != null) {
+                    if (rigaRicevuta.equals(Protocol.FINE_TRASMISSIONE_NODO_NODO)) {
+                        break;
+                    }
+                    bw.write(rigaRicevuta);
+                    bw.newLine();
                 }
-
-                invia_dati.println(riga_da_inviare);
-                System.out.println("Inviata riga: " + riga_da_inviare);
+                bw.flush();
             }
 
-            //Finito di inviare i dati, chiudo il lettore ed invio la stringa END
-            leggi_file.close();
-            System.out.println("Fine dei dati da inviare..");
-            invia_dati.println(Protocol.FINE_TRASMISSIONE_NODO_NODO);
+            s.close();
+            System.out.println("Download completato.");
 
-            //Attendo la ricezione della stringa END dal nodo ricevente
-            try {
-                String conferma = ricevi_conferma_da_server.readLine();
-                if (Protocol.FINE_TRASMISSIONE_NODO_NODO.equals(conferma)) {
-                    System.out.println("Il server ha confermato la fine della ricezione dei dati.");
-                }
-            } catch (Exception e) {
-                System.err.println("Errore nella ricezione della conferma dal server: " + e.getMessage());
-            }
-
-            System.out.println("Chisura connessione effettuata.");
-
-            //chiudo la connessione al nodo ricevente
-            if (s != null && !s.isClosed()) {
-                s.close(); 
-            }
+            // Notifica di successo all'aggregatore
+            toAggregator.println(Aggregator_Protocol.DOWNLOAD_OK + Aggregator_Protocol.SEP + nomeRilevazione
+                    + Aggregator_Protocol.SEP + nomePeer);
 
         } catch (Exception e) {
-            System.err.println("Errore nella procedura: " + e.getMessage());
+            System.err.println("Errore durante il download: " + e.getMessage());
+            // Notifica di fallimento all'aggregatore
+            toAggregator.println(Aggregator_Protocol.DOWNLOAD_FAILED + Aggregator_Protocol.SEP + nomeRilevazione
+                    + Aggregator_Protocol.SEP + nomePeer);
         }
-        
     }
-
 }

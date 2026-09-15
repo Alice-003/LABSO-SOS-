@@ -18,5 +18,6 @@ public class Protocol {
     public static final String TUTTO_OK = "OKBenvenuto";
     public static final String AGGIUNGI_RISORSA = "ADD";
     public static final String REGISTRO_GIA_EFFETTUATO = "REGISTRO GIA EFFETTUATO";
+    public static final String comandoDOWNLOAD = "DOWN";
 
 }

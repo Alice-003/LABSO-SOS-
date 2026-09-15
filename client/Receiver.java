@@ -1,8 +1,11 @@
 package client;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
+
+import client.protocol.Protocol;
 
 public class Receiver implements Runnable {
 
@@ -20,17 +23,27 @@ public class Receiver implements Runnable {
         try {
             Scanner from = new Scanner(this.s.getInputStream());
 
+            // Creiamo il PrintWriter qui, usando la stessa socket del Receiver
+            // per mantenere aperta la comunicazione con l'aggregatore
+
             while (from.hasNextLine()) {
                 String response = from.nextLine();
-                synchronized (Client.consoleLock) {
-                    if (!response.equals("OK") && !response.equals("DATA") && !response.equals("END")) {
-                        System.out.println(response);
-                    }
+                String[] strSPLIT = response.split(Protocol.SEPARATORE);
+                System.out.println("cccc: " + response);
+                if (strSPLIT[0].equals(Protocol.comandoDOWNLOAD)) {
+                    System.out.println(response);
+                    System.out.println(Sender.nomeRilevazioneDownload);
+                    PrintWriter toAggregator = new PrintWriter(s.getOutputStream(), true);
+                    String ip = strSPLIT[2];
+                    int porta = Integer.parseInt(strSPLIT[3]);
+                    String nomeRilevazione = strSPLIT[4];
+                    String nomePeer = strSPLIT[1];
 
+                    UploadManager up = new UploadManager(ip, porta, nomeRilevazione, nomePeer, toAggregator);
+                    Thread upThread = new Thread(up);
+                    upThread.setDaemon(true);
+                    upThread.start();
                 }
-            }
-            synchronized (Client.consoleLock) {
-                System.out.print("> ");
             }
 
             from.close();
