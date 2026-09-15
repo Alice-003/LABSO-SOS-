@@ -224,10 +224,11 @@ public class ClientHandler implements Runnable {
                                     } else {
                                         // rispondo al nodo richiedente con nome, IP e porta del peer
                                         // da cui può scaricare direttamente la rilevazione
-                                        to.println(Aggregator_Protocol.OK 
+                                        to.println("DOWN"
                                             + Aggregator_Protocol.SEP + nomePeer
                                             + Aggregator_Protocol.SEP + indirizzoPeer.ip()
-                                            + Aggregator_Protocol.SEP + indirizzoPeer.port());
+                                            + Aggregator_Protocol.SEP + indirizzoPeer.port()
+                                            + Aggregator_Protocol.SEP + risorsaRichiesta);
 
                                     }
                                 } 
