@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
+import aggregator.protocol.Aggregator_Protocol;
 import client.protocol.Protocol;
 
 public class Receiver implements Runnable {
@@ -22,17 +23,25 @@ public class Receiver implements Runnable {
 
         try {
             Scanner from = new Scanner(this.s.getInputStream());
-
+            Boolean stampa = false;
             // Creiamo il PrintWriter qui, usando la stessa socket del Receiver
             // per mantenere aperta la comunicazione con l'aggregatore
 
             while (from.hasNextLine()) {
                 String response = from.nextLine();
                 String[] strSPLIT = response.split(Protocol.SEPARATORE);
-                System.out.println("cccc: " + response);
-                if (strSPLIT[0].equals(Protocol.comandoDOWNLOAD)) {
+
+                if (response.equals(Aggregator_Protocol.DATA)) {
+                    stampa = true;
+
+                } else if (response.equals(Aggregator_Protocol.END)) {
+                    stampa = false;
+                }
+                if (stampa == true) {
                     System.out.println(response);
-                    System.out.println(Sender.nomeRilevazioneDownload);
+                }
+                if (strSPLIT[0].equals(Protocol.comandoDOWNLOAD)) {
+
                     PrintWriter toAggregator = new PrintWriter(s.getOutputStream(), true);
                     String ip = strSPLIT[2];
                     int porta = Integer.parseInt(strSPLIT[3]);
