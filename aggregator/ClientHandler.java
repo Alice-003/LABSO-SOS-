@@ -322,7 +322,7 @@ public class ClientHandler implements Runnable {
         // se il nodo si era registrato, lo rimuovo della lista dei nodi attivi
         if (nodeName != null) {
         resourceTable.disconnectNodes(nodeName);
-        System.out.println("Nodo" + nodeName + "rimosso dalla rete");
+        System.out.println("Nodo " + nodeName + " rimosso dalla rete");
         }
         
         // chiudo la socket se non è già chiusa, per evitare di richiuderla
