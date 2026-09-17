@@ -19,19 +19,18 @@ import java.util.Optional;
  * 
  * Legge i comandi dal nodo, li interpreta con Aggregator_Message,
  * delega la logica a ResourceTable e LogManager, e risponde seguendo
- * le costanti definite in Aggregator_Protocol 
+ * le costanti definite in Aggregator_Protocol
  * 
  */
 
-
 public class ClientHandler implements Runnable {
-    
+
     // la socket della connessione con questo specifico nodo sensore
     Socket s;
 
     // tabella delle rilevazioni, condivisa tra tutti i ClientHandler
     ResourceTable resourceTable;
-    
+
     // log dei download, condiviso tra tutti i ClientHandler
     LogManager logManager;
 
@@ -49,43 +48,43 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        try{
+        try {
             // apro gli stream per leggere e scrivere sulla socket
             Scanner from = new Scanner(s.getInputStream());
             PrintWriter to = new PrintWriter(s.getOutputStream(), true);
 
-            // chiediamo alla socket l'IP del nodo che si è connesso, e lo salviamo nella variabile nodeIP
+            // chiediamo alla socket l'IP del nodo che si è connesso, e lo salviamo nella
+            // variabile nodeIP
             nodeIp = s.getInetAddress().getHostAddress();
 
             System.out.println("Thread" + Thread.currentThread().getName() + " listening...");
 
             // flag che controlla il loop principale: diventa true solo con QUIT
             boolean closed = false;
-            
+
             // loop continua finchè il nodo non manda QUIT
             // o finchè ci sono ancora righe da leggere
-            while (!closed && from.hasNextLine()){
-                
+            while (!closed && from.hasNextLine()) {
+
                 // leggo la prossima riga inviata dal nodo
                 String request = from.nextLine();
-                
+
                 // divido la riga in al max 3 parti (comando, nome risorsa, contenuto/risorse)
                 // usata più sotto solo per estrarre le risorse iniziali nel REGISTER
                 String[] parts = request.split(Aggregator_Protocol.SEP, Aggregator_Protocol.MAX_SPLIT);
-                
 
                 // controllo se il thread ha ricevuto un interrupt dall'esterno
-                if(!Thread.interrupted()){
+                if (!Thread.interrupted()) {
                     System.out.println("Request: " + request);
-                    
-                    try{
+
+                    try {
                         // trasformo la riga grezza in un oggetto Aggregator_Message
                         // più comodo da leggere (comando + argomenti)
 
                         Aggregator_Message msg = Aggregator_Message.parse(request);
-                        
+
                         // smisto il comando ricevuto
-                        switch (msg.getCommand()){
+                        switch (msg.getCommand()) {
 
                             case Aggregator_Protocol.REGISTER:
                                 if (nodeName != null) {
@@ -93,23 +92,25 @@ public class ClientHandler implements Runnable {
                                     break;
                                 }
                                 // un nodo si registra: deve fornire almeno nome e porta
-                                if(!msg.hasAtLeast(2)){
-                                    to.println(Aggregator_Protocol.ERROR + " Formato errato, serve: REGISTER nomeNodo porta");
+                                if (!msg.hasAtLeast(2)) {
+                                    to.println(Aggregator_Protocol.ERROR
+                                            + " Formato errato, serve: REGISTER nomeNodo porta");
                                     break;
                                 }
-                                
+
                                 String nomeNodoCandidato = msg.getArg(0);
                                 if (!nomeNodoCandidato.matches("[a-zA-Z0-9_]+")) {
-                                    to.println(Aggregator_Protocol.ERROR + "Il nome del nodo può contenere solo lettere, numeri e underscore");
+                                    to.println(Aggregator_Protocol.ERROR
+                                            + "Il nome del nodo può contenere solo lettere, numeri e underscore");
                                     break;
                                 }
-                                
+
                                 nodeName = nomeNodoCandidato;
-                                
+
                                 // salvo la porta del nodo, convertendola in numero
                                 try {
                                     nodePort = Integer.parseInt(msg.getArg(1));
-                                } catch(NumberFormatException e) {
+                                } catch (NumberFormatException e) {
                                     to.println(Aggregator_Protocol.ERROR + " La porta deve essere un numero");
                                     nodeName = null;
                                     break;
@@ -118,17 +119,17 @@ public class ClientHandler implements Runnable {
                                 // costruisco la lista delle rilevazioni iniziali del nodo
                                 List<String> resourceList;
                                 if (parts.length > 2 && parts[2] != null && !parts[2].trim().isEmpty()) {
-                                    
+
                                     // se ci sono rilevazioni elencate, le divido sullo spazio
                                     String[] resourcesArray = parts[2].split(Aggregator_Protocol.SEP);
-                                    
+
                                     // le trasformo in una List, perchè registerNodes la richiede così
                                     resourceList = Arrays.asList(resourcesArray);
                                 } else {
                                     // se non ci sono rilevazioni elencate, passo una lista vuota
                                     resourceList = List.of();
                                 }
-                                
+
                                 // registro il nodo e le sue rilevazioni iniziali nella ResourceTable
                                 resourceTable.registerNodes(nodeName, resourceList, nodeIp, nodePort);
 
@@ -138,22 +139,22 @@ public class ClientHandler implements Runnable {
 
                             case Aggregator_Protocol.ADD:
                                 // un nodo deve essersi registrato prima di poter aggiungere rilevazioni
-                                if (nodeName == null){
+                                if (nodeName == null) {
                                     to.println(Aggregator_Protocol.ERROR + " Nodo non registrato, invia REGISTER");
                                     break;
 
                                 }
-                                
+
                                 // ADD richiede sia il nome della risorsa che il contenuto
-                                if(!msg.hasAtLeast(1)){
+                                if (!msg.hasAtLeast(1)) {
                                     to.println(Aggregator_Protocol.ERROR + " Formato errato, serve: ADD nomeRisorsa");
                                     break;
                                 }
                                 // nome della rilevazione è il primo argomento
                                 String nomeRisorsa = msg.getArg(0);
-                                
+
                                 // non leggo il contenuto, l'aggregatore traccia solo chi possiede la risorsa
-                                
+
                                 // registro nella ResourceTable che questo nodo possiede questa risorsa
                                 resourceTable.addResource(nodeName, nomeRisorsa);
 
@@ -162,7 +163,7 @@ public class ClientHandler implements Runnable {
                                 break;
 
                             case Aggregator_Protocol.LISTDATA_REMOTE:
-                                if(nodeName == null){
+                                if (nodeName == null) {
                                     to.println(Aggregator_Protocol.ERROR + " Nodo non registrato, invia REGISTER");
                                     break;
                                 }
@@ -174,15 +175,16 @@ public class ClientHandler implements Runnable {
 
                                 // inizio la risposta multi-riga
                                 to.println(Aggregator_Protocol.DATA);
-                                
+
                                 // per ogni rilevazione presente in rete, costruiscono e invio una riga
                                 for (Map.Entry<String, List<String>> entry : tutteLeRisorse.entrySet()) {
                                     String nomeRisorsaEntry = entry.getKey();
                                     List<String> nodiChePossiedono = entry.getValue();
-                                    
+
                                     // formatto la riga
-                                    String riga = nomeRisorsaEntry + Aggregator_Protocol.SEP 
-                                    + String.join(Aggregator_Protocol.SEP, nodiChePossiedono);
+                                    String riga = "Risorsa:" + Aggregator_Protocol.SEP + nomeRisorsaEntry
+                                            + Aggregator_Protocol.SEP + "Nodi:" + Aggregator_Protocol.SEP
+                                            + String.join(Aggregator_Protocol.SEP, nodiChePossiedono);
                                     to.println(riga);
                                 }
                                 to.println(Aggregator_Protocol.END);
@@ -190,48 +192,51 @@ public class ClientHandler implements Runnable {
 
                             case Aggregator_Protocol.DOWNLOAD_REQUEST:
                                 // il nodo deve essersi registrato prima di chiedere un download
-                                if(nodeName == null) {
+                                if (nodeName == null) {
                                     to.println(Aggregator_Protocol.ERROR + " Nodo non registrato, invia REGISTER");
                                     break;
                                 }
 
                                 // serve il nome della risorsa da scaricare
-                                if(!msg.hasAtLeast(1)){
-                                    to.println(Aggregator_Protocol.ERROR + " Formato errato, serve: DOWNLOAD_REQUEST nomeRisorsa");
+                                if (!msg.hasAtLeast(1)) {
+                                    to.println(Aggregator_Protocol.ERROR
+                                            + " Formato errato, serve: DOWNLOAD_REQUEST nomeRisorsa");
                                     break;
                                 }
 
                                 String risorsaRichiesta = msg.getArg(0);
-                                
+
                                 // cerco un nodo attivo che possiede questa rilevazione
-                                                                
+
                                 Optional<String> peer0pt = resourceTable.getActiveNodeForResource(risorsaRichiesta);
-                                if(peer0pt.isEmpty()){
-                                    to.println(Aggregator_Protocol.ERROR + " Nessun nodo ha questa rilevazione: " + risorsaRichiesta);                            
+                                if (peer0pt.isEmpty()) {
+                                    to.println(Aggregator_Protocol.ERROR + " Nessun nodo ha questa rilevazione: "
+                                            + risorsaRichiesta);
                                 } else {
-                                    
+
                                     // ho trovato un nodo che possiede la risorsa
                                     String nomePeer = peer0pt.get();
-                                    
+
                                     // chiedo alla ResourceTable l'indirizzo di rete di quel nodo
                                     ResourceTable.NodeAddress indirizzoPeer = resourceTable.getNodeAddress(nomePeer);
-                                    
+
                                     if (indirizzoPeer == null) {
                                         // caso limite: il nodo è nella tabella delle risorse
                                         // ma non ha un indirizzo registrato
-                                        to.println(Aggregator_Protocol.ERROR + " Indirizzo del nodo non disponibile: " + nomePeer);
+                                        to.println(Aggregator_Protocol.ERROR + " Indirizzo del nodo non disponibile: "
+                                                + nomePeer);
 
                                     } else {
                                         // rispondo al nodo richiedente con nome, IP e porta del peer
                                         // da cui può scaricare direttamente la rilevazione
                                         to.println(Aggregator_Protocol.DOWNLOAD_RESPONSE
-                                            + Aggregator_Protocol.SEP + nomePeer
-                                            + Aggregator_Protocol.SEP + indirizzoPeer.ip()
-                                            + Aggregator_Protocol.SEP + indirizzoPeer.port()
-                                            + Aggregator_Protocol.SEP + risorsaRichiesta);
+                                                + Aggregator_Protocol.SEP + nomePeer
+                                                + Aggregator_Protocol.SEP + indirizzoPeer.ip()
+                                                + Aggregator_Protocol.SEP + indirizzoPeer.port()
+                                                + Aggregator_Protocol.SEP + risorsaRichiesta);
 
                                     }
-                                } 
+                                }
                                 break;
 
                             case Aggregator_Protocol.DOWNLOAD_FAILED:
@@ -239,23 +244,24 @@ public class ClientHandler implements Runnable {
                                     to.println(Aggregator_Protocol.ERROR + " Nodo non registrato, invia REGISTER");
                                     break;
                                 }
-                                
+
                                 // servono sia la risorsa che il nodo peer che ha fallito
-                                if (!msg.hasAtLeast(2)){
-                                    to.println(Aggregator_Protocol.ERROR + " Formato errato, serve: DOWNLOAD_FAILED nomeRIsorsa nomeNodoPeer");
+                                if (!msg.hasAtLeast(2)) {
+                                    to.println(Aggregator_Protocol.ERROR
+                                            + " Formato errato, serve: DOWNLOAD_FAILED nomeRIsorsa nomeNodoPeer");
                                     break;
                                 }
                                 String risorsaFallita = msg.getArg(0);
                                 String nodoPeerFallito = msg.getArg(1);
-                                
+
                                 // rimuovo l'associazione nodo-risorsa dalla tabella
                                 resourceTable.removeEntity(nodoPeerFallito, risorsaFallita);
-                                
+
                                 // registro nel log il tentativo fallito
                                 logManager.log(risorsaFallita, nodoPeerFallito, nodeName, false);
 
                                 System.out.println("Download fallito: " + nodeName
-                                 + " non può scaricare " + risorsaFallita + " da " + nodoPeerFallito);
+                                        + " non può scaricare " + risorsaFallita + " da " + nodoPeerFallito);
                                 to.println(Aggregator_Protocol.OK);
                                 break;
 
@@ -265,8 +271,9 @@ public class ClientHandler implements Runnable {
                                     break;
                                 }
                                 // servono sia la risorsa che il nodo peer da cui ha scaricato
-                                if (!msg.hasAtLeast(2)){
-                                    to.println(Aggregator_Protocol.ERROR + " Formato errato, serve: DOWNLOAD_OK nomeRisorsa nomeNodoPeer");
+                                if (!msg.hasAtLeast(2)) {
+                                    to.println(Aggregator_Protocol.ERROR
+                                            + " Formato errato, serve: DOWNLOAD_OK nomeRisorsa nomeNodoPeer");
                                     break;
                                 }
                                 String risorsaOk = msg.getArg(0);
@@ -276,68 +283,68 @@ public class ClientHandler implements Runnable {
                                 logManager.log(risorsaOk, nodoPeerOk, nodeName, true);
 
                                 System.out.println("Download completato: " + risorsaOk
-                                + " scaricata da " + nodoPeerOk + " a " + nodeName);
+                                        + " scaricata da " + nodoPeerOk + " a " + nodeName);
                                 to.println(Aggregator_Protocol.OK);
                                 break;
 
                             case Aggregator_Protocol.QUIT:
                                 // il nodo vuole disconnettersi: imposto closed a true
-                                // così il while si ferma al prossimo controllo                                
+                                // così il while si ferma al prossimo controllo
                                 closed = true;
                                 to.println(Aggregator_Protocol.OK + " Sessione terminata ");
                                 break;
 
                             default:
                                 // comando non riconosciuto tra quelli previsti dal protocollo
-                                to.println(Aggregator_Protocol.ERROR + " Comando non riconosciuto: " + msg.getCommand());
-                                                                    
+                                to.println(
+                                        Aggregator_Protocol.ERROR + " Comando non riconosciuto: " + msg.getCommand());
+
                         }
-                    } catch (IllegalArgumentException e){
+                    } catch (IllegalArgumentException e) {
                         // catturo eventuali errori di parsing del messaggio e li segnalo al nodo
                         to.println(Aggregator_Protocol.ERROR + " " + e.getMessage());
                     }
-                                         
-                }
-            }            
-                // inviamo il quit e chiudiamo la socket una volta usciti dal ciclo
-                to.println(Aggregator_Protocol.QUIT);
-                from.close();
-                to.close();
-                s.close();
-                System.out.println("Closed");
 
-            } catch (IOException e){
-                System.err.println("ClientHandler IOException: " + e);
-                e.printStackTrace();
-            } finally {
-                // eseguito sempre, sia in caso di chiusura normale che di errore:
-                // garantisce che il nodo venga rimosso e la socket chiusa
-                cleanup();
+                }
             }
+            // inviamo il quit e chiudiamo la socket una volta usciti dal ciclo
+            to.println(Aggregator_Protocol.QUIT);
+            from.close();
+            to.close();
+            s.close();
+            System.out.println("Closed");
+
+        } catch (IOException e) {
+            System.err.println("ClientHandler IOException: " + e);
+            e.printStackTrace();
+        } finally {
+            // eseguito sempre, sia in caso di chiusura normale che di errore:
+            // garantisce che il nodo venga rimosso e la socket chiusa
+            cleanup();
+        }
     }
 
     // pulizia finale eseguita quando la connessione termina
     private void cleanup() {
-        
+
         // se il nodo si era registrato, lo rimuovo della lista dei nodi attivi
         if (nodeName != null) {
-        resourceTable.disconnectNodes(nodeName);
-        System.out.println("Nodo " + nodeName + " rimosso dalla rete");
+            resourceTable.disconnectNodes(nodeName);
+            System.out.println("Nodo " + nodeName + " rimosso dalla rete");
         }
-        
+
         // chiudo la socket se non è già chiusa, per evitare di richiuderla
         try {
-            if(s != null && !s.isClosed()) {
+            if (s != null && !s.isClosed()) {
                 s.close();
             }
-        } catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Errore chiusura socket: " + e.getMessage());
 
         }
 
         // messaggio finale di debug
         System.out.println("Connessione chiusa per " + (nodeName != null ? nodeName : nodeIp));
-                
+
     }
 }
-
