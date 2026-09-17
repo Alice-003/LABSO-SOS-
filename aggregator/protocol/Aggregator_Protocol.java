@@ -47,6 +47,9 @@ public class Aggregator_Protocol {
     // segna la fine di una risposta su più righe
     public static final String END = "END";
 
+    // risposta dell'aggregatore che indica il nodo da cui scaricare una rilevazione
+    public static final String DOWNLOAD_RESPONSE = "DOWN";
+
     // costanti utilità
     // separatore tra i campi di un messaggio
     public static final String SEP = " ";
