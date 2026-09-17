@@ -224,7 +224,7 @@ public class ClientHandler implements Runnable {
                                     } else {
                                         // rispondo al nodo richiedente con nome, IP e porta del peer
                                         // da cui può scaricare direttamente la rilevazione
-                                        to.println(Aggregator_Protocol.DoWNLOAD_RESPONSE
+                                        to.println(Aggregator_Protocol.DOWNLOAD_RESPONSE
                                             + Aggregator_Protocol.SEP + nomePeer
                                             + Aggregator_Protocol.SEP + indirizzoPeer.ip()
                                             + Aggregator_Protocol.SEP + indirizzoPeer.port()
