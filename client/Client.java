@@ -21,7 +21,11 @@ public class Client {
 
             try {
                 File fileID = new File("client/Files/NodoID.txt");
-                File fileRilevazioni = new File("client/Files/Rilevazioni_" + LocalStorage.ottieniCodice(2) + ".csv");
+                String nomeRilevTrovato = LocalStorage.trovaFile("Rilevazioni");
+                File fileRilevazioni = nomeRilevTrovato.isEmpty()
+                        ? new File("client/Files/Rilevazioni_temp.csv") // Oggetto fittizio solo per far partire i
+                                                                        // controlli
+                        : new File("client/Files/" + nomeRilevTrovato);
 
                 // Verifica che i file che contiene l'id del nodo e il file delle rilevazione
                 // esistano
@@ -45,7 +49,7 @@ public class Client {
                 } else if (!fileID.exists() && fileRilevazioni.exists()) {
                     LocalStorage.creaFileID(lunghezzaID, LocalStorage.ottieniCodice(2));
                 }
-
+                fileRilevazioni = new File("client/Files/" + LocalStorage.trovaFile("Rilevazioni"));
                 ID = LocalStorage.ottieniCodice(1);
                 LocalStorage.ScriviNuoviDati(ID);
                 String host = args[0];
