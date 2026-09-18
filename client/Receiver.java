@@ -31,11 +31,17 @@ public class Receiver implements Runnable {
                 String response = from.nextLine();
                 String[] strSPLIT = response.split(Protocol.SEPARATORE);
 
-                if (response.equals(Aggregator_Protocol.DATA)) {
-                    stampa = true;
-
-                } else if (response.equals(Aggregator_Protocol.END)) {
-                    stampa = false;
+                switch (response.split(Aggregator_Protocol.SEP)[0]) {
+                    case Aggregator_Protocol.DATA:
+                        stampa = true;
+                        break;
+                    case Aggregator_Protocol.END:
+                        stampa = false;
+                        break;
+                    case Aggregator_Protocol.ERROR:
+                        stampa = true;
+                    default:
+                        break;
                 }
                 if (stampa == true) {
                     System.out.println(response);
