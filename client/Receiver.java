@@ -33,6 +33,7 @@ public class Receiver implements Runnable {
 
                 switch (response.split(Aggregator_Protocol.SEP)[0]) {
                     case Aggregator_Protocol.DATA:
+
                         stampa = true;
                         break;
                     case Aggregator_Protocol.END:
@@ -43,7 +44,7 @@ public class Receiver implements Runnable {
                     default:
                         break;
                 }
-                if (stampa == true) {
+                if (stampa == true && !response.split(Aggregator_Protocol.SEP)[0].equals(Aggregator_Protocol.DATA)) {
                     System.out.println(response);
                 }
                 if (strSPLIT[0].equals(Protocol.comandoDOWNLOAD)) {

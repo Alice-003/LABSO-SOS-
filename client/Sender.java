@@ -34,7 +34,7 @@ public class Sender implements Runnable {
             PrintWriter to = new PrintWriter(this.s.getOutputStream(), true);
 
             while (continuaCiclo) {
-                System.out.print("> ");
+
                 input = scn.nextLine();
                 String[] strSplit = input.split(" ");
                 comando = commandHandler.gestioneComandi(input);
