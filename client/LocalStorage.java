@@ -71,7 +71,7 @@ public class LocalStorage {
 
     }
 
-    public static void creaFileID(int lunghezzaID, String codice) {
+    public static void creaFileID(String codice) {
         try {
             File fileID = new File("client/Files/NodoID.txt");
             fileID.createNewFile();
@@ -208,18 +208,22 @@ public class LocalStorage {
     }
 
     public static Boolean nomeRilevazionePresente(String nome) {
-        /*uso try withresources che chiude automaticamente fr e br anche se si fa return nel mezzo e
-        il percorso del file è passato direttamente a FileReader, senza variabile intermedia*/
-        try(FileReader fr = new FileReader("client/Files/" + LocalStorage.trovaFile("Rilevazioni"));
-            BufferedReader br = new BufferedReader(fr)) {
-            
+        /*
+         * uso try withresources che chiude automaticamente fr e br anche se si fa
+         * return nel mezzo e
+         * il percorso del file è passato direttamente a FileReader, senza variabile
+         * intermedia
+         */
+        try (FileReader fr = new FileReader("client/Files/" + LocalStorage.trovaFile("Rilevazioni"));
+                BufferedReader br = new BufferedReader(fr)) {
+
             String str;
             br.readLine();
             // Viene fatta una lettura dei nomi delle rilevazioni, dato che i nomi delle
             // rilevazioni deve essere univoca
             while ((str = br.readLine()) != null) {
                 if (str.split(",")[0].equals(nome)) {
-                    return true; //br e fr vengono chiusi automaticamente
+                    return true; // br e fr vengono chiusi automaticamente
                 }
             }
         } catch (Exception er) {

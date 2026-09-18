@@ -47,7 +47,7 @@ public class Client {
                     fileRilevazioniCancellato = true;
 
                 } else if (!fileID.exists() && fileRilevazioni.exists()) {
-                    LocalStorage.creaFileID(lunghezzaID, LocalStorage.ottieniCodice(2));
+                    LocalStorage.creaFileID(LocalStorage.ottieniCodice(2));
                 }
                 fileRilevazioni = new File("client/Files/" + LocalStorage.trovaFile("Rilevazioni"));
                 ID = LocalStorage.ottieniCodice(1);
