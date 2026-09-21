@@ -9,11 +9,10 @@ public class ResourceTable {
     public record NodeAddress(String ip, int port) {
     }
 
-    // OPERAZIONI DI SCRITTURA
     /**
      * rilevazione: insieme di nodi che la possiedono
-     * uso Set perché garantisce che ogni rilevazione ha un nome univoco
-     * per nodo, quindi non si hanno duplicati
+     * uso Set perché lo stesso nodo non può comparire due volte per la stessa
+     * rilevazione (nessun duplicato), mentre la stessa rilevazione può stare su più nodi
      */
     private final Map<String, Set<String>> table = new HashMap<>();
 
@@ -24,6 +23,7 @@ public class ResourceTable {
     private final Lock readLock = rwLock.readLock();
     private final Lock writeLock = rwLock.writeLock();
 
+    // OPERAZIONI DI SCRITTURA
     /**
      * Metodo che registra un nodo appena si connette e la sua relativa lista
      * delle rilevazini.
@@ -64,6 +64,7 @@ public class ResourceTable {
      * Metodo che segnala che un sensore si è disconnesso
      * le relative rilevazioni non saranno più accessibili
      * viene chiamato quando viene eseguito il comando "quit"
+     * e una disconnessione improvvisa
      */
     public void disconnectNodes(String nodeId) {
         writeLock.lock();
@@ -150,20 +151,6 @@ public class ResourceTable {
         readLock.lock();
         try {
             return addresses.get(nodeId);
-        } finally {
-            readLock.unlock();
-        }
-    }
-
-    /**
-     * Metodo che restituisce la lista di tutti i dodi attivi connessi al momento
-     * viene usato dal comando "listdata remote" del client per mostrare i peer
-     * presenti sulla rete
-     */
-    public List<String> getActiveNode() {
-        readLock.lock();
-        try {
-            return new ArrayList<>(activeNodes);
         } finally {
             readLock.unlock();
         }

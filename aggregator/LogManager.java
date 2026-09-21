@@ -54,7 +54,7 @@ public class LogManager {
     }
 
     /**Metodo che restituisce una stringa formattata con tutti gli eventi registrati
-     * pronta per essere stampata come output del comando 
+     * pronta per essere stampata come output del comando "log"
      */
     public String getFormattedLog(){
         readLock.lock();

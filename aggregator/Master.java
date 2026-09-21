@@ -12,7 +12,7 @@ public class Master {
     
     public static void main(String[] args) {
         /**1) legge la porta da linea di comando
-        *se non viene passata la porta, stampa le istruzioni di utilizzo 
+        *se non viene passata la porta (esattamente un elemento), stampa le istruzioni di utilizzo 
         */
         if(args.length!=1){
             System.err.println("Uso: java Master <porta>");
@@ -31,12 +31,12 @@ public class Master {
         ResourceTable resourceTable=new ResourceTable();
         LogManager logManager=new LogManager();
 
-        /**3) apre ServerSocket sulla porta e gestisco la chiusura dello Scanner*/
+        /**3) apre ServerSocket sulla porta e gestisco la chiusura dello Scanner con il try-with-resource*/
         try(ServerSocket serverSocket=new ServerSocket(port); 
             Scanner in=new Scanner(System.in);){
             System.out.println("Aggregatore avviato sulla porta "+ port);
 
-            /**4) creo un thread separato che accetta connessioni in loop */
+            /**4) creo un thread (accettatore) separato che accetta connessioni in loop */
             Thread acceptThread=new Thread(()->{
                 while(!serverSocket.isClosed()){
                     try{
@@ -53,7 +53,9 @@ public class Master {
                 }
             });
 
-            //thread daemon: il thread termina automaticamente quando termina il thread principale
+            //thread daemon: non impedisce alla JVM di terminare quando il main finisce,
+            //anche se accept() fosse ancora in attesa
+            //se il main termina (es. dopo "quit"), la JVM non aspetta questo thread
             acceptThread.setDaemon(true);
             acceptThread.start();
 
@@ -62,6 +64,7 @@ public class Master {
                 String input=in.nextLine().trim();
                 switch(input){
                     case "listdata":
+                        //recupera dalla ResourceTable solo le risorse attive (nome risorsa -> lista di valori)
                         Map<String, java.util.List<String>> resources=resourceTable.getAllActiveResource();
                         if(resources.isEmpty()){
                             System.out.println("Nessuna rilevazione disponibile sulla rete.");
@@ -76,6 +79,7 @@ public class Master {
                         }
                     break;
                     case "log":
+                        //il formato del log è gestito nella classe LogManager
                         System.out.println(logManager.getFormattedLog());
                     break;
                     case "quit":
@@ -83,6 +87,7 @@ public class Master {
                         serverSocket.close(); //causa l'uscita dal loop del thread accettatore
                         return;
                     default:
+                        //se non si inserisce un comando conosciuto, comprese righe vuote, indica quali usare
                         System.out.println("Comando non riconosciuto. Scegli tra: 'listdata', 'log', 'quit'");
                 }
             }
