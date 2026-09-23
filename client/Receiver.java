@@ -64,17 +64,11 @@ public class Receiver implements Runnable {
 
             from.close();
         } catch (IOException e) {
-            synchronized (Client.consoleLock) {
                 System.err.println("IOException caught: " + e);
                 e.printStackTrace();
-            }
-
         } finally {
-            synchronized (Client.consoleLock) {
                 this.sender.interrupt();
                 System.out.println("Receiver closed.");
-            }
-
         }
     }
 }
