@@ -7,7 +7,7 @@ import client.protocol.Protocol;
 
 public class Client {
 
-    public static final Object consoleLock = new Object();
+    public static final Object lock = new Object();
 
     public static void main(String[] args) {
         int lunghezzaID = 5;
@@ -56,10 +56,13 @@ public class Client {
                 int port = Integer.parseInt(args[1]);
                 Socket s = new Socket(host, port);
 
-                // registrazione all'aggregatore con l'informazione ID del nodo
+                // creo la connessione per il nodo sensore - nodo sensore istanziando DownloadManager
+                // durante la creazione del socket viene creata la porta di connessione randomicamente
+                // mi registro all'aggregatore con le informazioni del nodo 
+                // (info: nome del nodo, porta di ascolto del nodo [mentre fa da "server" in connessione sensore-sensore])
 
                 PrintWriter to = new PrintWriter(s.getOutputStream(), true);
-                DownloadManager dw = new DownloadManager();
+                DownloadManager dw = new DownloadManager(lock);
                 Thread thDownloadManager = new Thread(dw);
                 thDownloadManager.setDaemon(true);
                 thDownloadManager.start();
@@ -103,11 +106,18 @@ public class Client {
                     for (int i = 0; i < indiceUltimoValoreLetto; i++) {
                         br.readLine();
                     }
+
+                    //metto questo if per far si che la prima riga non venga inviata, altriementi
+                    //ritroverei una rilevazione col nome corrispondente a Nome
+                    if (indiceUltimoValoreLetto == 0) {
+                        str = br.readLine();
+                    }
+
                     while ((str = br.readLine()) != null) {
-                        to.println(Protocol.AGGIUNGI_RISORSA + Protocol.SEPARATORE + str.split(",")[0]
-                                + Protocol.SEPARATORE + str.split(",")[1] + Protocol.SEPARATORE + str.split(",")[2]
-                                + Protocol.SEPARATORE + str.split(",")[3]);
-                        indiceUltimoValoreLetto++;
+                            to.println(Protocol.AGGIUNGI_RISORSA + Protocol.SEPARATORE + str.split(",")[0]
+                                    + Protocol.SEPARATORE + str.split(",")[1] + Protocol.SEPARATORE + str.split(",")[2]
+                                    + Protocol.SEPARATORE + str.split(",")[3]);
+                            indiceUltimoValoreLetto++;
                     }
 
                     FileWriter fwIndice = new FileWriter(fileIndice);
@@ -120,7 +130,7 @@ public class Client {
 
                 }
 
-                Thread sender = new Thread(new Sender(s));
+                Thread sender = new Thread(new Sender(s, lock));
                 Thread receiver = new Thread(new Receiver(s, sender));
                 sender.start();
                 receiver.start();
