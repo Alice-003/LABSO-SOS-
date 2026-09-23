@@ -13,9 +13,11 @@ public class DownloadManager implements Runnable {
 
     public int porta;
     ServerSocket server;
+    Object lock;
 
-    public DownloadManager() {
+    public DownloadManager(Object lock) {
         try {
+            this.lock = lock;
             this.server = new ServerSocket(0);
             this.porta = server.getLocalPort();
             System.out.println("DEBUG: DownloadManager (Server) inizializzato sulla porta " + this.porta);
@@ -29,7 +31,7 @@ public class DownloadManager implements Runnable {
     }
 
     @Override
-    public synchronized void run() {
+    public void run() {
         if (server == null)
             return;
 
@@ -48,20 +50,22 @@ public class DownloadManager implements Runnable {
                 File cartellaFiles = new File("client/Files/");
                 File[] listaFile = cartellaFiles.listFiles();
 
-                if (listaFile != null) {
-                    for (File fileRilevazioni : listaFile) {
-                        // Verifichiamo che sia un file e che finisca per .csv
-                        if (fileRilevazioni.isFile() && fileRilevazioni.getName().endsWith(".csv")) {
+                synchronized(lock) {
+                    if (listaFile != null) {
+                        for (File fileRilevazioni : listaFile) {
+                            // Verifichiamo che sia un file e che finisca per .csv
+                            if (fileRilevazioni.isFile() && fileRilevazioni.getName().endsWith(".csv")) {
 
-                            try (BufferedReader fileReader = new BufferedReader(new FileReader(fileRilevazioni))) {
-                                String riga;
-                                while ((riga = fileReader.readLine()) != null) {
-                                    // Se la riga corrisponde alla risorsa richiesta, la spedisco via socket
-                                    if (nomeRisorsaRichiesta == null
-                                            || riga.split(",")[0].equals(nomeRisorsaRichiesta)) {
-                                        System.out.println(
-                                                "Invio al peer dal file " + fileRilevazioni.getName() + ": " + riga);
-                                        toClient.println(riga);
+                                try (BufferedReader fileReader = new BufferedReader(new FileReader(fileRilevazioni))) {
+                                    String riga;
+                                    while ((riga = fileReader.readLine()) != null) {
+                                        // Se la riga corrisponde alla risorsa richiesta, la spedisco via socket
+                                        if (nomeRisorsaRichiesta == null
+                                                || riga.split(",")[0].equals(nomeRisorsaRichiesta)) {
+                                            System.out.println(
+                                                    "Invio al peer dal file " + fileRilevazioni.getName() + ": " + riga);
+                                            toClient.println(riga);
+                                        }
                                     }
                                 }
                             }

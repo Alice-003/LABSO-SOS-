@@ -15,8 +15,10 @@ import client.protocol.Protocol;
 public class Sender implements Runnable {
 
     Socket s;
+    Object lock;
 
-    public Sender(Socket s) {
+    public Sender(Socket s, Object lock) {
+        this.lock = lock;
         this.s = s;
     }
 
@@ -41,7 +43,9 @@ public class Sender implements Runnable {
                 switch (comando) {
                     case 1:
                         System.out.println("Risorse:");
-                        LocalStorage.mostraRilevazioniLocale();
+                        synchronized (lock) {
+                            LocalStorage.mostraRilevazioniLocale();
+                        }
                         break;
                     case 2:
                         to.println("LISTDATA_REMOTE");
@@ -67,22 +71,23 @@ public class Sender implements Runnable {
                                     "client/Files/" + LocalStorage.trovaFile("Rilevazioni"));
                             if (!LocalStorage.nomeRilevazionePresente(strSplit[1])) {
                                 try {
-                                    FileWriter fwFileRilevazioni = new FileWriter(fileRilevzioni, true);
-                                    BufferedWriter bwFileRilevazioni = new BufferedWriter(fwFileRilevazioni);
-                                    String strScritta = "";
-
-                                    int temperatura = Integer.parseInt(strSplit[2]);
-                                    double pressione = Double.parseDouble(strSplit[3]);
-                                    int livelloCo2 = Integer.parseInt(strSplit[4]);
-                                    strScritta = strSplit[1] + "," + String.valueOf(temperatura) + ","
-                                            + String.valueOf(pressione) + "," + String.valueOf(livelloCo2);
-                                    to.println(Protocol.AGGIUNGI_RISORSA + Protocol.SEPARATORE + strSplit[1]
-                                            + Protocol.SEPARATORE
-                                            + temperatura + Protocol.SEPARATORE + pressione
-                                            + Protocol.SEPARATORE + livelloCo2 + "\r");
-                                    bwFileRilevazioni.write(strScritta + "\r");
-                                    bwFileRilevazioni.close();
-                                    fwFileRilevazioni.close();
+                                    synchronized(lock) {
+                                        FileWriter fwFileRilevazioni = new FileWriter(fileRilevzioni, true);
+                                        BufferedWriter bwFileRilevazioni = new BufferedWriter(fwFileRilevazioni);
+                                        String strScritta = "";
+                                        int temperatura = Integer.parseInt(strSplit[2]);
+                                        double pressione = Double.parseDouble(strSplit[3]);
+                                        int livelloCo2 = Integer.parseInt(strSplit[4]);
+                                        strScritta = strSplit[1] + "," + String.valueOf(temperatura) + ","
+                                                + String.valueOf(pressione) + "," + String.valueOf(livelloCo2);
+                                        to.println(Protocol.AGGIUNGI_RISORSA + Protocol.SEPARATORE + strSplit[1]
+                                                + Protocol.SEPARATORE
+                                                + temperatura + Protocol.SEPARATORE + pressione
+                                                + Protocol.SEPARATORE + livelloCo2 + "\r");
+                                        bwFileRilevazioni.write(strScritta + "\r");
+                                        bwFileRilevazioni.close();
+                                        fwFileRilevazioni.close();
+                                    }
                                     File fileIndice = new File("client/Files/indice.txt");
                                     FileReader frIndice = new FileReader(fileIndice);
                                     BufferedReader brIndice = new BufferedReader(frIndice);
