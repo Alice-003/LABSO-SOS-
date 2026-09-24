@@ -28,9 +28,10 @@ public class UploadManager implements Runnable {
 
     @Override
     public synchronized void run() {
-        
-        //Creo la connessione con il nodo che deve ricevere i dati e uso un try with resource che garantisce la chiusura automatica del socket
-        try (Socket s = new Socket(ip, porta);){
+
+        // Creo la connessione con il nodo che trasmette i dati e uso un try with
+        // resource che garantisce la chiusura automatica del socket
+        try (Socket s = new Socket(ip, porta);) {
             System.out.println("Connessione al peer " + ip + ":" + porta + " per: " + nomeRilevazione);
 
             PrintWriter toPeer = new PrintWriter(s.getOutputStream(), true);
@@ -42,6 +43,7 @@ public class UploadManager implements Runnable {
             if (!fileRilevazioniDownload.exists()) {
                 fileRilevazioniDownload.createNewFile();
             }
+            // viene elaborato l'output dalla connessione nodo nodo
 
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileRilevazioniDownload, true))) {
                 String rigaRicevuta;

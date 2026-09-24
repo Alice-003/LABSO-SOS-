@@ -2,6 +2,7 @@ package client;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Scanner;
 
 import client.protocol.Protocol;
 
@@ -10,11 +11,13 @@ public class Client {
     public static final Object lock = new Object();
 
     public static void main(String[] args) {
+
         int lunghezzaID = 5;
         String ID;
         int indiceUltimoValoreLetto = 0;
         Boolean fileRilevazioniCancellato = false;
 
+        // Verifica che gli input siano due: ip porta
         if (args.length != 2) {
             System.out.println("Errore input. Riavviare il programma!");
         } else {
@@ -27,14 +30,14 @@ public class Client {
                                                                         // controlli
                         : new File("client/Files/" + nomeRilevTrovato);
 
-                // Verifica che i file che contiene l'id del nodo e il file delle rilevazione
+                // Verifica che il file che contiene l'id del nodo e il file delle rilevazione
                 // esistano
                 // Se il file nodo viene cancellato, allora viene ricreato riprendendolo dal
                 // file delle rilevazioni
                 // Se il file delle rilevazioni viene cancellato, allora viene ricreato
-                // Se entrambi i file vengono cancellati, vengono ricreati entrambi i file con
+                // Se entrambi i file vengono cancellati, vengono ricreati entrambi con
                 // un ID diverso
-                // Inoltre viene fatta una verifica per un controllo riguardante all'indice
+                // Inoltre viene fatta una verifica per un controllo riguardante l'indice
                 // dell'ultimo dato trasmesso. Se il file delle rilevazioni
                 // viene cancellato allora l'indice viene resettato a 0
 
@@ -56,10 +59,13 @@ public class Client {
                 int port = Integer.parseInt(args[1]);
                 Socket s = new Socket(host, port);
 
-                // creo la connessione per il nodo sensore - nodo sensore istanziando DownloadManager
-                // durante la creazione del socket viene creata la porta di connessione randomicamente
-                // mi registro all'aggregatore con le informazioni del nodo 
-                // (info: nome del nodo, porta di ascolto del nodo [mentre fa da "server" in connessione sensore-sensore])
+                // creo la connessione per il nodo sensore - nodo sensore istanziando
+                // DownloadManager
+                // durante la creazione del socket viene creata la porta di connessione
+                // randomicamente
+                // mi registro all'aggregatore con le informazioni del nodo
+                // (info: nome del nodo, porta di ascolto del nodo [mentre fa da "server" in
+                // connessione sensore-sensore])
 
                 PrintWriter to = new PrintWriter(s.getOutputStream(), true);
                 DownloadManager dw = new DownloadManager(lock);
@@ -69,17 +75,13 @@ public class Client {
                 System.out.println("Porta lato sever nodo: " + dw.getLocalPort());
                 to.println(Protocol.RICHIESTA_REGISTRAZIONE_A_SERVER + Protocol.SEPARATORE
                         + LocalStorage.ottieniCodice(1) + Protocol.SEPARATORE + dw.getLocalPort());
-                InputStream is = s.getInputStream();
-                StringBuilder sb = new StringBuilder();
-                int b;
-                while ((b = is.read()) != -1 && b != '\n') {
-                    if (b != '\r') { // ignora il carriage return
-                        sb.append((char) b);
-                    }
-                }
-                String response = sb.toString();
 
-                // Nel caso in cui la registrazione abbia avuto successo
+                Scanner from = new Scanner(s.getInputStream());
+                String response = from.nextLine();
+
+                // viene fatta una richiesta di collegamento all'aggregatore sia per la prima
+                // volta che per le successive. Dopo l'esito positivo vengono trasmesse le
+                // rilevazioni non ancora trasmesse.
 
                 File fileIndice = new File("client/Files/indice.txt");
                 if (fileRilevazioniCancellato) {
@@ -91,35 +93,40 @@ public class Client {
                     FileReader fr = new FileReader(fileRilevazioni);
                     BufferedReader br = new BufferedReader(fr);
                     String str = "";
-
+                    // Se il file delle rilevazioni è stato cancellato, viene resettato l'indice.
                     if (!fileIndice.exists()) {
                         fileIndice.createNewFile();
                         LocalStorage.resettaIndice(fileIndice);
                     } else {
+                        // Viene letto l'indice dell'ultimo valore trasmesso. Così il programma
+                        // riconsoce se le ultime rilevazioni non sono state trasmesse
                         FileReader frIndice = new FileReader(fileIndice);
                         BufferedReader brIndice = new BufferedReader(frIndice);
                         indiceUltimoValoreLetto = Integer.parseInt(brIndice.readLine());
                         brIndice.close();
                         frIndice.close();
                     }
-
+                    // Viene spostato il puntatore del file fino all'indice dell'ultima riga
+                    // trasmessa. Altrimenti verrebbero ritrasmesse sempre.
                     for (int i = 0; i < indiceUltimoValoreLetto; i++) {
                         br.readLine();
                     }
 
-                    //metto questo if per far si che la prima riga non venga inviata, altriementi
-                    //ritroverei una rilevazione col nome corrispondente a Nome
+                    // metto questo if per far si che la prima riga non venga inviata, altriementi
+                    // ritroverei una rilevazione col nome corrispondente a Nome
                     if (indiceUltimoValoreLetto == 0) {
                         str = br.readLine();
                     }
-
+                    // Vengono trasmesse le nuove rilevazioni all'aggregatore con il
+                    // formato:nome,temperatura,pressione,livelloCo2
+                    // Viene incrementato l'indice
                     while ((str = br.readLine()) != null) {
-                            to.println(Protocol.AGGIUNGI_RISORSA + Protocol.SEPARATORE + str.split(",")[0]
-                                    + Protocol.SEPARATORE + str.split(",")[1] + Protocol.SEPARATORE + str.split(",")[2]
-                                    + Protocol.SEPARATORE + str.split(",")[3]);
-                            indiceUltimoValoreLetto++;
+                        to.println(Protocol.AGGIUNGI_RISORSA + Protocol.SEPARATORE + str.split(",")[0]
+                                + Protocol.SEPARATORE + str.split(",")[1] + Protocol.SEPARATORE + str.split(",")[2]
+                                + Protocol.SEPARATORE + str.split(",")[3]);
+                        indiceUltimoValoreLetto++;
                     }
-
+                    // L'indice aggiornato viene sovrascritto sul file dedicato
                     FileWriter fwIndice = new FileWriter(fileIndice);
                     BufferedWriter bwIndice = new BufferedWriter(fwIndice);
                     bwIndice.write(String.valueOf(indiceUltimoValoreLetto));
@@ -129,24 +136,23 @@ public class Client {
                     fr.close();
 
                 }
-
+                // Vengono stanziati i thread sender per le trasmissioni dei comandi e receiver
+                // per le risposte da parte del server
                 Thread sender = new Thread(new Sender(s, lock));
                 Thread receiver = new Thread(new Receiver(s, sender));
                 sender.start();
                 receiver.start();
                 try {
-                    /* rimane in attesa che sender e receiver terminino la loro esecuzione */
                     sender.join();
                     receiver.join();
 
                     s.close();
+                    from.close();
                     System.out.println("Socket closed");
                 } catch (InterruptedException e) {
-                    /*
-                     * se qualcuno interrompe questo thread nel frattempo, terminiamo
-                     */
                     System.out.println("ERRORE INTERCETTATO NEL CATCH:");
                     e.printStackTrace();
+                    from.close();
                     return;
                 }
             } catch (Exception er) {

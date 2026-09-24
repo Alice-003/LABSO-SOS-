@@ -1,6 +1,8 @@
 package client;
 
 public class CommandHandler {
+    // il metodo verifica che il comando digitato dall'utente sia valido.
+    // Se sì, lo traduce in numero intero che verrà gestito poi dal Sender.
     public int gestioneComandi(String input) {
         String[] strSplit = input.split(" ");
         switch (input.split(" ")[0].toLowerCase()) {

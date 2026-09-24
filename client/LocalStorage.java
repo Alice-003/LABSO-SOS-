@@ -15,7 +15,7 @@ public class LocalStorage {
     public static HashSet<String> codici = new HashSet<String>();
 
     // Il metodo genera un codice casuale utilizzato sia per generare l'ID di un
-    // nodo sia per generare il codice della rilevazione
+    // nodo sia per generare il nome del file: Rilevazioni_[ID].csv
 
     private static String generaCodice(int lunghezaID) {
         String codice = "";
@@ -31,6 +31,11 @@ public class LocalStorage {
         return codice;
     }
 
+    // Il metodo serve per cercare un file basandosi sul prefisso del suo nome dato
+    // che, quello completo,
+    // non è conosciuto a priori in quanto composto da due elementi (prefisso e id
+    // del nodo)
+
     public static String trovaFile(String prefisso) {
         Path dir = Paths.get("client/Files/");
 
@@ -40,13 +45,8 @@ public class LocalStorage {
                     .filter(path -> path.getFileName().toString().startsWith(prefisso))
                     .collect(Collectors.toList());
 
-            if (!fileTrovati.isEmpty()) {
-
-                if (prefisso.equals("Rilevazioni")) {
-                    return fileTrovati.getFirst().getFileName().toString();
-                } else if (prefisso.equals("Download")) {
-                    return fileTrovati.toString();
-                }
+            if (!fileTrovati.isEmpty() && prefisso.equals("Rilevazioni")) {
+                return fileTrovati.getFirst().getFileName().toString();
             }
 
         } catch (Exception er) {
@@ -56,6 +56,10 @@ public class LocalStorage {
 
     }
 
+    // Il metodo genera il file NodoID.txt contente l'id del nodo
+    // Il codice id generato è nuovo e creato casualmente, in quanto al momento del
+    // richiamo del metodo, non esiste il
+    // file rilevazioni.
     public static void creaFileID(int lunghezzaID) {
         try {
             File fileID = new File("client/Files/NodoID.txt");
@@ -70,6 +74,9 @@ public class LocalStorage {
         }
 
     }
+
+    // Il metodo rigenera il file NodoID.txt prendendo in input il codice da
+    // scrivere.
 
     public static void creaFileID(String codice) {
         try {
@@ -87,9 +94,8 @@ public class LocalStorage {
 
     }
 
-    // Ottieni il codice attraverso sia il file ID oppure attraverso il file
-    // Rilevazioni
-    // Può essere ottenuto in due modi a seconda di quale file manca per esempio
+    // Ottieni il codice o tramite il file ID o attraverso il file
+    // Rilevazioni a seconda di quale manca dei due
 
     public static String ottieniCodice(int index) {
         String codice = "none";
@@ -101,10 +107,8 @@ public class LocalStorage {
                     FileReader fw = new FileReader(fileID);
                     BufferedReader bw = new BufferedReader(fw);
                     codice = bw.readLine();
-
                     bw.close();
                     fw.close();
-
                     break;
 
                 case 2:
@@ -120,7 +124,9 @@ public class LocalStorage {
         return codice;
     }
 
-    // Metodo che serve per trasmettere all'aggregatore nuovi dati realistici
+    // Metodo che serve per creare dati realistici, generati randomicamente, entro
+    // un range prestabilito per poi scriverli nel file rilevazioni
+
     public static void ScriviNuoviDati(String ID) {
         Random rnd = new Random();
         int numeroMisurazioni = 10;
@@ -131,13 +137,11 @@ public class LocalStorage {
         int pressioneMin = 980;
         int livelloCo2 = 450;
         int deltaCo2;
-
         double pressioneGenerata = pressioneMin + ((double) rnd.nextInt(pressioneMax - pressioneMin + 1));
 
         try {
 
             File fileRilevazioni = new File("client/Files/Rilevazioni_" + ID + ".csv");
-
             FileWriter fw = new FileWriter(fileRilevazioni, true);
             BufferedWriter bw = new BufferedWriter(fw);
             for (int i = 0; i < numeroMisurazioni; i++) {
@@ -146,6 +150,7 @@ public class LocalStorage {
                 gradiMin = gradiMin - 1;
                 pressioneGenerata = pressioneGenerata + -1 + rnd.nextDouble(1 + 1);
                 String codiceGenerato = generaCodice(5);
+
                 while (true) {
                     if (!codici.contains(codiceGenerato)) {
                         break;
@@ -164,13 +169,14 @@ public class LocalStorage {
             bw.close();
             fw.close();
         } catch (Exception er) {
-
+            System.out.println("Errore: " + er.getMessage());
         }
 
     }
 
-    // metodo che viene richiamato quando viene creato un nuovo nodo sensore oppure
-    // quando viene ricreato
+    // metodo che serve a creare il file Rilevazioni o quando viene avviato un nuovo
+    // nodo sensore oppure
+    // quando il file è stato cancellato e deve essere rigenerato.
     public static void creaFileRilevazioni() {
         try {
 
@@ -186,8 +192,9 @@ public class LocalStorage {
             System.out.println("Errore: " + error.getMessage());
         }
     }
-    // Il metodo che viene richiamato quando l'utente scrive come input: listdata
-    // local
+
+    // Il metodo serve per stampare sul terminale i nomi delle rilevazioni locali
+    // quando viene lanciato il comando listdata local
 
     public static void mostraRilevazioniLocale() {
         try {
@@ -207,23 +214,18 @@ public class LocalStorage {
         }
     }
 
+    // Metodo che serve a garantire l'unicità del nome della rilevazione nel file
+    // locale
+
     public static Boolean nomeRilevazionePresente(String nome) {
-        /*
-         * uso try withresources che chiude automaticamente fr e br anche se si fa
-         * return nel mezzo e
-         * il percorso del file è passato direttamente a FileReader, senza variabile
-         * intermedia
-         */
+
         try (FileReader fr = new FileReader("client/Files/" + LocalStorage.trovaFile("Rilevazioni"));
                 BufferedReader br = new BufferedReader(fr)) {
-
             String str;
             br.readLine();
-            // Viene fatta una lettura dei nomi delle rilevazioni, dato che i nomi delle
-            // rilevazioni deve essere univoca
             while ((str = br.readLine()) != null) {
                 if (str.split(",")[0].equals(nome)) {
-                    return true; // br e fr vengono chiusi automaticamente
+                    return true;
                 }
             }
         } catch (Exception er) {
@@ -233,8 +235,9 @@ public class LocalStorage {
         return false;
     }
 
+    // Metodo che serve a resettare l'indice nel caso in cui il file Rilevazioni
+    // venga cancellato
     public static void resettaIndice(File fileIndice) {
-
         try {
             FileWriter fwIndice = new FileWriter(fileIndice);
             BufferedWriter bwIndice = new BufferedWriter(fwIndice);

@@ -50,12 +50,11 @@ public class DownloadManager implements Runnable {
                 File cartellaFiles = new File("client/Files/");
                 File[] listaFile = cartellaFiles.listFiles();
 
-                synchronized(lock) {
+                synchronized (lock) {
                     if (listaFile != null) {
                         for (File fileRilevazioni : listaFile) {
-                            // Verifichiamo che sia un file e che finisca per .csv
                             if (fileRilevazioni.isFile() && fileRilevazioni.getName().endsWith(".csv")) {
-
+                                // Cerco nel file Rilevazioni la risorsa richiesta
                                 try (BufferedReader fileReader = new BufferedReader(new FileReader(fileRilevazioni))) {
                                     String riga;
                                     while ((riga = fileReader.readLine()) != null) {
@@ -63,7 +62,8 @@ public class DownloadManager implements Runnable {
                                         if (nomeRisorsaRichiesta == null
                                                 || riga.split(",")[0].equals(nomeRisorsaRichiesta)) {
                                             System.out.println(
-                                                    "Invio al peer dal file " + fileRilevazioni.getName() + ": " + riga);
+                                                    "Invio al peer dal file " + fileRilevazioni.getName() + ": "
+                                                            + riga);
                                             toClient.println(riga);
                                         }
                                     }
