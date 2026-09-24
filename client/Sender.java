@@ -22,7 +22,7 @@ public class Sender implements Runnable {
         this.s = s;
     }
 
-    public static String nomeRilevazioneDownload;
+    ;
 
     @Override
     public void run() {
@@ -31,6 +31,7 @@ public class Sender implements Runnable {
         Scanner scn = new Scanner(System.in);
         String input;
         int comando;
+
         CommandHandler commandHandler = new CommandHandler();
         try {
             PrintWriter to = new PrintWriter(this.s.getOutputStream(), true);
@@ -64,30 +65,42 @@ public class Sender implements Runnable {
                             System.out.println("Errore: numero di parametri non valido");
                         } else {
 
-                            // Se il nome non è presente il seguente codice all'interno dell'if si occupa di
-                            // aggiungere la rilevazione dell'utente
-                            // e si aggiorna l'indice dell'ultima rilevazione trasmessa al server
+                            // Se il nome non è presente il codice all'interno dell'if si occupa di
+
                             File fileRilevzioni = new File(
                                     "client/Files/" + LocalStorage.trovaFile("Rilevazioni"));
+
                             if (!LocalStorage.nomeRilevazionePresente(strSplit[1])) {
                                 try {
-                                    synchronized(lock) {
+                                    synchronized (lock) {
                                         FileWriter fwFileRilevazioni = new FileWriter(fileRilevzioni, true);
                                         BufferedWriter bwFileRilevazioni = new BufferedWriter(fwFileRilevazioni);
                                         String strScritta = "";
+
+                                        // viene effetuato un cast della stringa in valori numerici
+
                                         int temperatura = Integer.parseInt(strSplit[2]);
                                         double pressione = Double.parseDouble(strSplit[3]);
                                         int livelloCo2 = Integer.parseInt(strSplit[4]);
                                         strScritta = strSplit[1] + "," + String.valueOf(temperatura) + ","
                                                 + String.valueOf(pressione) + "," + String.valueOf(livelloCo2);
+
+                                        // Viene trasmessa la rilevazione all'aggregatore
+
                                         to.println(Protocol.AGGIUNGI_RISORSA + Protocol.SEPARATORE + strSplit[1]
                                                 + Protocol.SEPARATORE
                                                 + temperatura + Protocol.SEPARATORE + pressione
                                                 + Protocol.SEPARATORE + livelloCo2 + "\r");
+
+                                        // viene aggiunta la rilevazione su file locale
+
                                         bwFileRilevazioni.write(strScritta + "\r");
                                         bwFileRilevazioni.close();
                                         fwFileRilevazioni.close();
                                     }
+
+                                    // si aggiorna l'indice dell'ultima rilevazione trasmessa al server
+
                                     File fileIndice = new File("client/Files/indice.txt");
                                     FileReader frIndice = new FileReader(fileIndice);
                                     BufferedReader brIndice = new BufferedReader(frIndice);
@@ -111,7 +124,6 @@ public class Sender implements Runnable {
                         break;
                     case 5:
                         to.println("DOWNLOAD_REQUEST" + Protocol.SEPARATORE + input.split(" ")[1]);
-                        Sender.nomeRilevazioneDownload = strSplit[1];
 
                         break;
                     case -1:
